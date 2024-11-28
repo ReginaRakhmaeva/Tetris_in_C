@@ -47,7 +47,7 @@ Piece *getCurrentPiece() {
   }
   return piece;
 }
-
+bool canMoveDown(Piece *piece, int **field);
 void userInput(UserAction_t action, bool hold);
 
 bool checkCollision(int **field, Piece *piece);
@@ -62,7 +62,7 @@ void initNcurses() {
   noecho();
   keypad(stdscr, TRUE);
   curs_set(0);
-  timeout(500);
+  timeout(50);
 }
 
 void drawField(GameInfo_t *game) {
@@ -125,12 +125,12 @@ GameInfo_t updateCurrentState() {
     spawnNewPiece(&current_piece);
   }
 
-  static int tick = 0;
+  static int tick = 100;
   tick++;
   if (tick >= game->speed) {
     tick = 0;
     current_piece->y++;
-    if (checkCollision(game->field, current_piece)) {
+    if (!canMoveDown(current_piece, game->field)) {
       current_piece->y--;
       fixPiece(game->field, current_piece);
       spawnNewPiece(&current_piece);
@@ -159,6 +159,19 @@ bool checkCollision(int **field, Piece *piece) {
     }
   }
   return false;
+}
+
+bool canMoveDown(Piece *piece, int **field) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (piece->shape[i][j]) {
+        if (piece->y + i + 1 >= ROWS || field[piece->y + i + 1][piece->x + j]) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
 }
 
 void fixPiece(int **field, Piece *piece) {
@@ -254,18 +267,7 @@ bool canMoveRight(Piece *piece, int **field) {
   }
   return true;
 }
-bool canMoveDown(Piece *piece, int **field) {
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      if (piece->shape[i][j]) {
-        if (piece->y + i + 1 >= ROWS || field[piece->y + i + 1][piece->x + j]) {
-          return false;
-        }
-      }
-    }
-  }
-  return true;
-}
+
 bool canRotate(Piece *piece, int **field) {
   int rotated[4][4];
   for (int i = 0; i < 4; i++) {
@@ -329,12 +331,12 @@ void userInput(UserAction_t action, bool hold) {
       break;
 
     case Down:
-      if (currentPiece && !checkCollision(game->field, currentPiece)) {
+      if (currentPiece && canMoveDown(currentPiece, game->field)) {
         currentPiece->y += 1;
       } else {
         fixPiece(game->field, currentPiece);
         spawnNewPiece(&currentPiece);
-        if (checkCollision(game->field, currentPiece)) {
+        if (!canMoveDown(currentPiece, game->field)) {
           game->pause = 1;
         }
       }
@@ -362,6 +364,7 @@ void cleanupNcurses(GameInfo_t *game) {
   }
   free(game->field);
 }
+
 int main() {
   initNcurses();
 
