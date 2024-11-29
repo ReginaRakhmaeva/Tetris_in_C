@@ -43,7 +43,7 @@ void spawnNewPiece(Piece **piece);
 Piece *getCurrentPiece() {
   static Piece *piece = NULL;
   if (piece == NULL) {
-    spawnNewPiece(&piece);  // Инициализация фигуры при первом запросе
+    spawnNewPiece(&piece);
   }
   return piece;
 }
@@ -143,22 +143,6 @@ GameInfo_t updateCurrentState() {
   game->speed = 100 - game->level * 10;
 
   return *game;  // Возвращаем копию обновленного состояния
-}
-
-bool checkCollision(int **field, Piece *piece) {
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      if (piece->shape[i][j]) {
-        int newX = piece->x + j;
-        int newY = piece->y + i;
-
-        if (newX < 0 || newX >= COLS || newY >= ROWS || field[newY][newX]) {
-          return true;
-        }
-      }
-    }
-  }
-  return false;
 }
 
 bool canMoveDown(Piece *piece, int **field) {
@@ -268,32 +252,14 @@ bool canMoveRight(Piece *piece, int **field) {
   return true;
 }
 
-bool canRotate(Piece *piece, int **field) {
-  int rotated[4][4];
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      rotated[j][3 - i] = piece->shape[i][j];
-    }
-  }
-
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      if (rotated[i][j]) {
-        int newX = piece->x + j;
-        int newY = piece->y + i;
-        if (newX < 0 || newX >= COLS || newY >= ROWS || field[newY][newX]) {
-          return false;
-        }
-      }
-    }
-  }
-  return true;
-}
-void rotatePiece(Piece *piece) {
+void rotatePiece(Piece *piece, int **field) {
+  // Проверка на квадратную фигуру (она не вращается)
   if (piece->shape[1][1] == 1 && piece->shape[0][0] == 1 &&
       piece->shape[0][1] == 1 && piece->shape[1][0] == 1) {
     return;
   }
+
+  // Поворот фигуры на 90 градусов по часовой стрелке
   int rotated[4][4];
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -301,14 +267,63 @@ void rotatePiece(Piece *piece) {
     }
   }
 
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      piece->shape[i][j] = rotated[i][j];
+  // Массив смещений SRS для проверки при коллизии
+  const int offsets[5][2] = {
+      {0, 0},   // Нет смещения
+      {-1, 0},  // Смещение влево
+      {1, 0},   // Смещение вправо
+      {0, -1},  // Смещение вверх
+      {0, 1}    // Смещение вниз
+  };
+
+  // Проверка возможности применения поворота с учетом смещений
+  for (int k = 0; k < 5; k++) {
+    bool valid = true;
+    int offsetX = offsets[k][0];
+    int offsetY = offsets[k][1];
+
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (rotated[i][j]) {
+          int newX = piece->x + j + offsetX;
+          int newY = piece->y + i + offsetY;
+          if (newX < 0 || newX >= COLS || newY >= ROWS ||
+              (newY >= 0 && field[newY][newX])) {
+            valid = false;
+            break;
+          }
+        }
+      }
+      if (!valid) break;
+    }
+
+    if (valid) {
+      // Применяем вращение и смещение
+      for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+          piece->shape[i][j] = rotated[i][j];
+        }
+      }
+      piece->x += offsetX;
+      piece->y += offsetY;
+      return;
+    }
+  }
+
+  if (piece->x + 3 >= COLS) {
+    if (canMoveLeft(piece, field)) {
+      piece->x -= 1;
+      rotatePiece(piece, field);
+    }
+  } else if (piece->x < 0) {
+    if (canMoveRight(piece, field)) {
+      piece->x += 1;
+      rotatePiece(piece, field);
     }
   }
 }
 void userInput(UserAction_t action, bool hold) {
-  (void)hold;  // не используется
+  (void)hold;
 
   GameInfo_t *game = getGameInfo();
   Piece *currentPiece = getCurrentPiece();
@@ -343,9 +358,7 @@ void userInput(UserAction_t action, bool hold) {
       break;
 
     case Action:
-      if (currentPiece && canRotate(currentPiece, game->field)) {
-        rotatePiece(currentPiece);
-      }
+      rotatePiece(currentPiece, game->field);
       break;
 
     case Pause:
