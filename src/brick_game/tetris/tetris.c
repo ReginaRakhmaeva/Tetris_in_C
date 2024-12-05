@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define ROWS 20
 #define COLS 10
@@ -42,15 +43,15 @@ GameInfo_t *getGameInfo() {
 void spawnNewPiece(Piece **piece);
 Piece *getCurrentPiece() {
   static Piece *piece = NULL;
-  if (piece == NULL) {
-    spawnNewPiece(&piece);
+  if (!piece) {
+    spawnNewPiece(&piece);  // Инициализация новой фигуры
   }
   return piece;
 }
+
 bool canMoveDown(Piece *piece, int **field);
 void userInput(UserAction_t action, bool hold);
 
-bool checkCollision(int **field, Piece *piece);
 GameInfo_t updateCurrentState();
 
 void drawField(GameInfo_t *game);
@@ -108,41 +109,44 @@ void drawField(GameInfo_t *game) {
 
 GameInfo_t updateCurrentState() {
   GameInfo_t *game = getGameInfo();
-  static Piece *current_piece = NULL;
+  Piece *current_piece = getCurrentPiece();
 
   if (!game->level) {
     game->level = 1;
     game->score = 0;
     game->high_score = 0;
-    game->speed = 100;
+    game->speed = 20 + game->level * 0.5;
     game->pause = 0;
 
     game->field = (int **)malloc(sizeof(int *) * ROWS);
     for (int i = 0; i < ROWS; i++) {
       game->field[i] = (int *)calloc(COLS, sizeof(int));
     }
-
-    spawnNewPiece(&current_piece);
   }
 
-  static int tick = 100;
-  tick++;
-  if (tick >= game->speed) {
-    tick = 0;
-    current_piece->y++;
-    if (!canMoveDown(current_piece, game->field)) {
-      current_piece->y--;
+  static clock_t lastTick = 0;
+  if (lastTick == 0) lastTick = clock();
+
+  double elapsed = (double)(clock() - lastTick) / CLOCKS_PER_SEC;
+  if (elapsed >= 0.02 / game->speed) {
+    lastTick = clock();
+    if (canMoveDown(current_piece, game->field)) {
+      current_piece->y++;
+    } else {
       fixPiece(game->field, current_piece);
       spawnNewPiece(&current_piece);
+      if (!canMoveDown(current_piece, game->field)) {
+        game->pause = 1;  // Игра на паузу, если больше нет места
+      }
     }
   }
 
   int lines_cleared = clearFullLines(game->field);
   game->score += lines_cleared * 100;
   game->level = game->score / 1000 + 1;
-  game->speed = 100 - game->level * 10;
+  game->speed = 1 + game->level;
 
-  return *game;  // Возвращаем копию обновленного состояния
+  return *game;
 }
 
 bool canMoveDown(Piece *piece, int **field) {
@@ -323,7 +327,7 @@ void rotatePiece(Piece *piece, int **field) {
   }
 }
 void userInput(UserAction_t action, bool hold) {
-  (void)hold;
+  (void)hold;  // Параметр, если не нужен
 
   GameInfo_t *game = getGameInfo();
   Piece *currentPiece = getCurrentPiece();
@@ -334,20 +338,20 @@ void userInput(UserAction_t action, bool hold) {
 
   switch (action) {
     case Left:
-      if (currentPiece && canMoveLeft(currentPiece, game->field)) {
-        currentPiece->x -= 1;
+      if (canMoveLeft(currentPiece, game->field)) {
+        currentPiece->x--;
       }
       break;
 
     case Right:
-      if (currentPiece && canMoveRight(currentPiece, game->field)) {
-        currentPiece->x += 1;
+      if (canMoveRight(currentPiece, game->field)) {
+        currentPiece->x++;
       }
       break;
 
     case Down:
-      if (currentPiece && canMoveDown(currentPiece, game->field)) {
-        currentPiece->y += 1;
+      if (canMoveDown(currentPiece, game->field)) {
+        currentPiece->y++;
       } else {
         fixPiece(game->field, currentPiece);
         spawnNewPiece(&currentPiece);
@@ -380,10 +384,10 @@ void cleanupNcurses(GameInfo_t *game) {
 
 int main() {
   initNcurses();
-
   while (true) {
     GameInfo_t game = updateCurrentState();
     drawField(&game);
+
     int ch = getch();
     if (ch == 'q') {
       cleanupNcurses(&game);
