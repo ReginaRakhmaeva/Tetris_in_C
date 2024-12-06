@@ -103,7 +103,14 @@ void drawField(GameInfo_t *game) {
   mvprintw(2, COLS * 2 + 5, "Score: %d", game->score);
   mvprintw(3, COLS * 2 + 5, "Level: %d", game->level);
   mvprintw(4, COLS * 2 + 5, "High Score: %d", game->high_score);
-
+  mvprintw(6, COLS * 2 + 5, "Next:");
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (game->next[i][j]) {
+        mvprintw(6 + i, COLS * 2 + 11 + j * 2, "[]");
+      }
+    }
+  }
   refresh();
 }
 
@@ -121,6 +128,12 @@ GameInfo_t updateCurrentState() {
     game->field = (int **)malloc(sizeof(int *) * ROWS);
     for (int i = 0; i < ROWS; i++) {
       game->field[i] = (int *)calloc(COLS, sizeof(int));
+    }
+  }
+  if (!game->next) {
+    game->next = (int **)malloc(sizeof(int *) * 4);
+    for (int i = 0; i < 4; i++) {
+      game->next[i] = (int *)calloc(4, sizeof(int));
     }
   }
 
@@ -214,17 +227,39 @@ void spawnNewPiece(Piece **piece) {
       {{0, 0, 1}, {1, 1, 1}, {0, 0, 0}, {0, 0, 0}}   // Обратная L
   };
 
-  *piece = (Piece *)malloc(sizeof(Piece));
-  int shapeIndex = rand() % 7;
+  GameInfo_t *game = getGameInfo();
 
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      (*piece)->shape[i][j] = shapes[shapeIndex][i][j];
+  // Если `next` пустой, создаем первую фигуру
+  if (!game->next) {
+    game->next = (int **)malloc(sizeof(int *) * 4);
+    for (int i = 0; i < 4; i++) {
+      game->next[i] = (int *)calloc(4, sizeof(int));
+    }
+    int shapeIndex = rand() % 7;
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        game->next[i][j] = shapes[shapeIndex][i][j];
+      }
     }
   }
 
+  // Создаем текущую фигуру из `next`
+  *piece = (Piece *)malloc(sizeof(Piece));
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      (*piece)->shape[i][j] = game->next[i][j];
+    }
+  }
   (*piece)->x = COLS / 2 - 2;
   (*piece)->y = 0;
+
+  // Обновляем `next`
+  int shapeIndex = rand() % 7;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      game->next[i][j] = shapes[shapeIndex][i][j];
+    }
+  }
 }
 
 bool canMoveLeft(Piece *piece, int **field) {
@@ -380,6 +415,11 @@ void cleanupNcurses(GameInfo_t *game) {
     free(game->field[i]);
   }
   free(game->field);
+
+  for (int i = 0; i < 4; i++) {
+    free(game->next[i]);
+  }
+  free(game->next);
 }
 
 int main() {
