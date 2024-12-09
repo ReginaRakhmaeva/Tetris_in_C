@@ -118,11 +118,16 @@ GameInfo_t updateCurrentState() {
   GameInfo_t *game = getGameInfo();
   Piece *current_piece = getCurrentPiece();
 
+  // Пропускаем обновление, если пауза активна
+  if (game->pause) {
+    return *game;
+  }
   if (!game->level) {
     game->level = 1;
     game->score = 0;
     game->high_score = 0;
     game->speed = 20 + game->level * 0.5;
+
     game->pause = 0;
 
     game->field = (int **)malloc(sizeof(int *) * ROWS);
@@ -141,7 +146,7 @@ GameInfo_t updateCurrentState() {
   if (lastTick == 0) lastTick = clock();
 
   double elapsed = (double)(clock() - lastTick) / CLOCKS_PER_SEC;
-  if (elapsed >= 0.02 / game->speed) {
+  if (elapsed >= 0.05 / game->speed) {
     lastTick = clock();
     if (canMoveDown(current_piece, game->field)) {
       current_piece->y++;
@@ -155,8 +160,14 @@ GameInfo_t updateCurrentState() {
   }
 
   int lines_cleared = clearFullLines(game->field);
+  if (lines_cleared == 4)
+    lines_cleared = 15;
+  else if (lines_cleared == 3)
+    lines_cleared = 7;
+  else if (lines_cleared == 2)
+    lines_cleared = 3;
   game->score += lines_cleared * 100;
-  game->level = game->score / 1000 + 1;
+  if (game->level < 10) game->level = game->score / 600 + 1;
   game->speed = 1 + game->level;
 
   return *game;
