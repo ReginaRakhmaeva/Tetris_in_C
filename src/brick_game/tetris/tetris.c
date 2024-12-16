@@ -1,3 +1,4 @@
+#include <locale.h>
 #include <ncurses.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -6,6 +7,9 @@
 
 #define ROWS 20
 #define COLS 10
+#define SUCCESS 0
+#define WIN_INIT(size) initNcurses()
+#define GET_USER_INPUT getch()
 
 // перечисление набора именнованных констант
 typedef enum {
@@ -47,6 +51,12 @@ Piece *getCurrentPiece() {
     spawnNewPiece(&piece);  // Инициализация новой фигуры
   }
   return piece;
+}
+void game_loop();
+void print_overlay() {
+  // Реализация, если требуется
+  mvprintw(0, 0, "Overlay...");
+  refresh();
 }
 
 bool canMoveDown(Piece *piece, int **field);
@@ -116,29 +126,22 @@ void drawField(GameInfo_t *game) {
 
 GameInfo_t updateCurrentState() {
   GameInfo_t *game = getGameInfo();
-  Piece *current_piece = getCurrentPiece();
+  Piece *currentPiece = getCurrentPiece();
 
-  // Пропускаем обновление, если пауза активна
   if (game->pause) {
-    return *game;
+    return *game;  // Если игра на паузе, просто возвращаем текущее состояние
   }
+
   if (!game->level) {
     game->level = 1;
     game->score = 0;
     game->high_score = 0;
     game->speed = 20 + game->level * 0.5;
-
     game->pause = 0;
 
     game->field = (int **)malloc(sizeof(int *) * ROWS);
     for (int i = 0; i < ROWS; i++) {
       game->field[i] = (int *)calloc(COLS, sizeof(int));
-    }
-  }
-  if (!game->next) {
-    game->next = (int **)malloc(sizeof(int *) * 4);
-    for (int i = 0; i < 4; i++) {
-      game->next[i] = (int *)calloc(4, sizeof(int));
     }
   }
 
@@ -148,24 +151,18 @@ GameInfo_t updateCurrentState() {
   double elapsed = (double)(clock() - lastTick) / CLOCKS_PER_SEC;
   if (elapsed >= 0.05 / game->speed) {
     lastTick = clock();
-    if (canMoveDown(current_piece, game->field)) {
-      current_piece->y++;
+    if (canMoveDown(currentPiece, game->field)) {
+      currentPiece->y++;
     } else {
-      fixPiece(game->field, current_piece);
-      spawnNewPiece(&current_piece);
-      if (!canMoveDown(current_piece, game->field)) {
+      fixPiece(game->field, currentPiece);
+      spawnNewPiece(&currentPiece);
+      if (!canMoveDown(currentPiece, game->field)) {
         game->pause = 1;  // Игра на паузу, если больше нет места
       }
     }
   }
 
   int lines_cleared = clearFullLines(game->field);
-  if (lines_cleared == 4)
-    lines_cleared = 15;
-  else if (lines_cleared == 3)
-    lines_cleared = 7;
-  else if (lines_cleared == 2)
-    lines_cleared = 3;
   game->score += lines_cleared * 100;
   if (game->level < 10) game->level = game->score / 600 + 1;
   game->speed = 1 + game->level;
@@ -433,18 +430,29 @@ void cleanupNcurses(GameInfo_t *game) {
   free(game->next);
 }
 
-int main() {
-  initNcurses();
-  while (true) {
-    GameInfo_t game = updateCurrentState();
-    drawField(&game);
+int main(void) {
+  WIN_INIT(50);
+  setlocale(LC_ALL, "");
+  print_overlay();
+  game_loop();
 
-    int ch = getch();
-    if (ch == 'q') {
-      cleanupNcurses(&game);
-      break;
+  return SUCCESS;
+}
+
+void game_loop() {
+  GameInfo_t *game = getGameInfo();
+  userInput(Start, false);  // Начинаем игру
+  bool break_flag = true;
+  int signal = 0;
+  UserAction_t state = Start;
+
+  while (break_flag) {
+    if (state == Terminate) {
+      break_flag = false;
     }
-    switch (ch) {
+
+    signal = GET_USER_INPUT;  // Получаем пользовательский ввод
+    switch (signal) {
       case KEY_LEFT:
         userInput(Left, false);
         break;
@@ -454,16 +462,25 @@ int main() {
       case KEY_DOWN:
         userInput(Down, false);
         break;
-      case KEY_UP:
-        break;
       case ' ':
-        userInput(Action, false);
+        userInput(Action, false);  // Пробел для поворота фигуры
         break;
       case 'p':
-        userInput(Pause, false);
+        userInput(Pause, false);  // 'p' для паузы
         break;
+      case 'q':             // Обработка выхода
+        state = Terminate;  // Устанавливаем состояние Terminate
+        break_flag = false;  // Выходим из игрового цикла
+        break;
+      default:
+        break;
+    }
+
+    if (break_flag) {
+      *game = updateCurrentState();
+      drawField(game);
     }
   }
 
-  return 0;
+  cleanupNcurses(game);  // Очистка ресурсов перед выходом
 }
