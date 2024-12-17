@@ -53,14 +53,27 @@ Piece *getCurrentPiece() {
   return piece;
 }
 void game_loop();
-void print_overlay() {
-  // Реализация, если требуется
-  mvprintw(0, 0, "Overlay...");
-  refresh();
-}
 
 bool canMoveDown(Piece *piece, int **field);
 void userInput(UserAction_t action, bool hold);
+void showStartScreen() {
+  clear();
+
+  mvprintw(ROWS / 2 - 5, COLS / 2, "TETRIS GAME");
+  mvprintw(ROWS / 2, COLS / 2 - 4, "Press ENTER to Start");
+  mvprintw(ROWS / 2 + 5, COLS / 2 - 3, "Arrow Keys: Move");
+  mvprintw(ROWS / 2 + 7, COLS / 2 - 2, "Space: Rotate");
+  mvprintw(ROWS / 2 + 9, COLS / 2 - 3, "p: Pause, q: Quit");
+
+  refresh();
+
+  while (true) {
+    int ch = GET_USER_INPUT;
+    if (ch == '\n') {  // Нажата клавиша Enter
+      break;
+    }
+  }
+}
 
 GameInfo_t updateCurrentState();
 
@@ -433,7 +446,7 @@ void cleanupNcurses(GameInfo_t *game) {
 int main(void) {
   WIN_INIT(50);
   setlocale(LC_ALL, "");
-  print_overlay();
+  showStartScreen();
   game_loop();
 
   return SUCCESS;
@@ -444,13 +457,8 @@ void game_loop() {
   userInput(Start, false);  // Начинаем игру
   bool break_flag = true;
   int signal = 0;
-  UserAction_t state = Start;
 
   while (break_flag) {
-    if (state == Terminate) {
-      break_flag = false;
-    }
-
     signal = GET_USER_INPUT;  // Получаем пользовательский ввод
     switch (signal) {
       case KEY_LEFT:
@@ -466,21 +474,20 @@ void game_loop() {
         userInput(Action, false);  // Пробел для поворота фигуры
         break;
       case 'p':
-        userInput(Pause, false);  // 'p' для паузы
+        userInput(Pause, false);  // Пауза
         break;
-      case 'q':             // Обработка выхода
-        state = Terminate;  // Устанавливаем состояние Terminate
-        break_flag = false;  // Выходим из игрового цикла
+      case 'q':
+        break_flag = false;  // Выход из игры
         break;
       default:
         break;
     }
 
-    if (break_flag) {
+    if (!game->pause) {
       *game = updateCurrentState();
       drawField(game);
     }
   }
 
-  cleanupNcurses(game);  // Очистка ресурсов перед выходом
+  cleanupNcurses(game);  // Завершение работы
 }
