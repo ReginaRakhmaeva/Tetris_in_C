@@ -56,21 +56,25 @@ void game_loop();
 
 bool canMoveDown(Piece *piece, int **field);
 void userInput(UserAction_t action, bool hold);
-void showStartScreen() {
+bool showStartScreen() {
   clear();
 
   mvprintw(ROWS / 2 - 5, COLS / 2, "TETRIS GAME");
   mvprintw(ROWS / 2, COLS / 2 - 4, "Press ENTER to Start");
+  mvprintw(ROWS / 2 + 1, COLS / 2, "or q to Quit");
+  mvprintw(ROWS / 2 + 4, COLS / 2 + 2, "RULES");
   mvprintw(ROWS / 2 + 5, COLS / 2 - 3, "Arrow Keys: Move");
-  mvprintw(ROWS / 2 + 7, COLS / 2 - 2, "Space: Rotate");
-  mvprintw(ROWS / 2 + 9, COLS / 2 - 3, "p: Pause, q: Quit");
+  mvprintw(ROWS / 2 + 6, COLS / 2 - 2, "Space: Rotate");
+  mvprintw(ROWS / 2 + 7, COLS / 2 - 3, "p: Pause, q: Quit");
 
   refresh();
 
   while (true) {
     int ch = GET_USER_INPUT;
-    if (ch == '\n') {  // Нажата клавиша Enter
-      break;
+    if (ch == '\n') {        // Нажата клавиша Enter
+      return true;           // Начать игру
+    } else if (ch == 'q') {  // Нажата клавиша q
+      return false;          // Выйти из игры
     }
   }
 }
@@ -442,12 +446,16 @@ void cleanupNcurses(GameInfo_t *game) {
   }
   free(game->next);
 }
-
+void cleanupNcursesstart() {
+  endwin();  // Завершение работы с ncurses
+}
 int main(void) {
   WIN_INIT(50);
   setlocale(LC_ALL, "");
-  showStartScreen();
-  game_loop();
+  if (!showStartScreen()) {
+    cleanupNcursesstart();
+  } else
+    game_loop();
 
   return SUCCESS;
 }
