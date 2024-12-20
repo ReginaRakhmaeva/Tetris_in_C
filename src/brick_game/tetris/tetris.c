@@ -92,7 +92,25 @@ void initNcurses() {
   curs_set(0);
   timeout(50);
 }
+void cleanupNcurses(GameInfo_t *game);
 
+void showGameOverScreen(GameInfo_t *game) {
+  clear();  // Очистка экрана
+  mvprintw(ROWS / 2 - 1, COLS / 2 - 5, "GAME OVER");
+  mvprintw(ROWS / 2, COLS / 2 - 8, "Your Score: %d", game->score);
+  mvprintw(ROWS / 2 + 1, COLS / 2 - 10, "Press ENTER to Restart");
+  mvprintw(ROWS / 2 + 2, COLS / 2 - 7, "or q to Quit");
+
+  refresh();  // Обновляем экран
+
+  while (true) {
+    int ch = GET_USER_INPUT;
+    if (ch == 'q') {  // Quit
+      cleanupNcurses(game);
+      exit(0);
+    }
+  }
+}
 void drawField(GameInfo_t *game) {
   clear();
   for (int i = 0; i <= ROWS; i++) {
@@ -172,13 +190,20 @@ GameInfo_t updateCurrentState() {
       currentPiece->y++;
     } else {
       fixPiece(game->field, currentPiece);
+      drawField(game);  // Обновляем экран перед проверкой завершения игры
+      refresh();  // Принудительно обновляем экран
       spawnNewPiece(&currentPiece);
+
+      // Проверка конца игры сразу после появления новой фигуры
       if (!canMoveDown(currentPiece, game->field)) {
-        game->pause = 1;  // Игра на паузу, если больше нет места
+        fixPiece(game->field, currentPiece);
+        drawField(game);
+        refresh();
+        napms(500);
+        showGameOverScreen(game);
       }
     }
   }
-
   int lines_cleared = clearFullLines(game->field);
   game->score += lines_cleared * 100;
   if (game->level < 10) game->level = game->score / 600 + 1;
@@ -416,7 +441,11 @@ void userInput(UserAction_t action, bool hold) {
         fixPiece(game->field, currentPiece);
         spawnNewPiece(&currentPiece);
         if (!canMoveDown(currentPiece, game->field)) {
-          game->pause = 1;
+          fixPiece(game->field, currentPiece);
+          drawField(game);
+          refresh();
+          napms(500);
+          showGameOverScreen(game);
         }
       }
       break;
