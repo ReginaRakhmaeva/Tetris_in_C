@@ -437,16 +437,6 @@ void userInput(UserAction_t action, bool hold) {
     case Down:
       if (canMoveDown(currentPiece, game->field)) {
         currentPiece->y++;
-      } else {
-        fixPiece(game->field, currentPiece);
-        spawnNewPiece(&currentPiece);
-        if (!canMoveDown(currentPiece, game->field)) {
-          fixPiece(game->field, currentPiece);
-          drawField(game);
-          refresh();
-          napms(500);
-          showGameOverScreen(game);
-        }
       }
       break;
 
