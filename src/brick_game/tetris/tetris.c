@@ -172,24 +172,23 @@ void drawField(GameInfo_t *game) {
 }
 
 void fixPartialPiece(int **field, Piece *piece) {
-  for (int i = 3; i >= 0; i--) {  // Начинаем с самой нижней строки фигуры
-    bool hasBlock = false;  // Флаг для проверки наличия блока в строке
+  for (int i = 3; i >= 0; i--) {
+    bool hasBlock = false;
     for (int j = 0; j < 4; j++) {
       if (piece->shape[i][j]) {
-        hasBlock = true;  // В строке есть блок
+        hasBlock = true;
         int newX = piece->x + j;
         int newY = 0;
         if (newY >= 0 && newY < ROWS && newX >= 0 && newX < COLS) {
-          // Фиксируем ячейку, если она в пределах поля
           field[newY][newX] = 1;
         }
       }
     }
     if (hasBlock) {
-      break;  // После фиксации самой нижней строки выходим из цикла
+      break;
     }
   }
-  free(piece);  // Освобождаем память после фиксации фигуры
+  free(piece);
 }
 
 bool isSpaceAvailableForFullFix(int **field, Piece *piece) {
@@ -396,76 +395,87 @@ bool canMoveRight(Piece *piece, int **field) {
   return true;
 }
 
-void rotatePiece(Piece *piece, int **field) {
-  // Проверка на квадратную фигуру (она не вращается)
-  if (piece->shape[1][1] == 1 && piece->shape[0][0] == 1 &&
-      piece->shape[0][1] == 1 && piece->shape[1][0] == 1) {
-    return;
-  }
+bool isSquarePiece(Piece *piece) {
+  return piece->shape[1][1] == 1 && piece->shape[0][0] == 1 &&
+         piece->shape[0][1] == 1 && piece->shape[1][0] == 1;
+}
 
-  // Поворот фигуры на 90 градусов по часовой стрелке
-  int rotated[4][4];
+void rotateMatrix90(int src[4][4], int dest[4][4]) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
-      rotated[j][3 - i] = piece->shape[i][j];
-    }
-  }
-
-  // Массив смещений SRS для проверки при коллизии
-  const int offsets[5][2] = {
-      {0, 0},   // Нет смещения
-      {-1, 0},  // Смещение влево
-      {1, 0},   // Смещение вправо
-      {0, -1},  // Смещение вверх
-      {0, 1}    // Смещение вниз
-  };
-
-  // Проверка возможности применения поворота с учетом смещений
-  for (int k = 0; k < 5; k++) {
-    bool valid = true;
-    int offsetX = offsets[k][0];
-    int offsetY = offsets[k][1];
-
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        if (rotated[i][j]) {
-          int newX = piece->x + j + offsetX;
-          int newY = piece->y + i + offsetY;
-          if (newX < 0 || newX >= COLS || newY >= ROWS ||
-              (newY >= 0 && field[newY][newX])) {
-            valid = false;
-            break;
-          }
-        }
-      }
-      if (!valid) break;
-    }
-
-    if (valid) {
-      // Применяем вращение и смещение
-      for (int i = 0; i < 4; i++) {
-        for (int j = 0; j < 4; j++) {
-          piece->shape[i][j] = rotated[i][j];
-        }
-      }
-      piece->x += offsetX;
-      piece->y += offsetY;
-      return;
-    }
-  }
-
-  if (piece->x + 3 >= COLS) {
-    if (canMoveLeft(piece, field)) {
-      piece->x -= 1;
-      rotatePiece(piece, field);
-    }
-  } else if (piece->x < 0) {
-    if (canMoveRight(piece, field)) {
-      piece->x += 1;
-      rotatePiece(piece, field);
+      dest[j][3 - i] = src[i][j];
     }
   }
 }
+
+bool isRotationValid(Piece *piece, int rotated[4][4], int offsetX, int offsetY,
+                     int **field) {
+  bool isValid = true;
+
+  for (int i = 0; i < 4 && isValid; i++) {
+    for (int j = 0; j < 4 && isValid; j++) {
+      if (rotated[i][j]) {
+        int newX = piece->x + j + offsetX;
+        int newY = piece->y + i + offsetY;
+
+        if (newX < 0 || newX >= COLS || newY >= ROWS ||
+            (newY >= 0 && field[newY][newX])) {
+          isValid = false;
+        }
+      }
+    }
+  }
+  return isValid;
+}
+
+void applyRotation(Piece *piece, int rotated[4][4], int offsetX, int offsetY) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      piece->shape[i][j] = rotated[i][j];
+    }
+  }
+  piece->x += offsetX;
+  piece->y += offsetY;
+}
+
+void rotatePiece(Piece *piece, int **field) {
+  if (isSquarePiece(piece)) {
+    return;  // Проверка аргументов
+  }
+
+  int rotated[4][4];
+  rotateMatrix90(piece->shape, rotated);
+
+  const int offsets[5][2] = {
+      {0, 0},   // No offset
+      {-1, 0},  // Left
+      {1, 0},   // Right
+      {0, -1},  // Up
+      {0, 1}    // Down
+  };
+
+  bool rotationApplied = false;
+
+  for (int k = 0; k < 5 && !rotationApplied; k++) {
+    int offsetX = offsets[k][0];
+    int offsetY = offsets[k][1];
+
+    if (isRotationValid(piece, rotated, offsetX, offsetY, field)) {
+      applyRotation(piece, rotated, offsetX, offsetY);
+      rotationApplied = true;
+    }
+  }
+
+  if (!rotationApplied) {
+    if (piece->x + 3 >= COLS && canMoveLeft(piece, field)) {
+      piece->x -= 1;
+    } else if (piece->x < 0 && canMoveRight(piece, field)) {
+      piece->x += 1;
+    }
+    rotatePiece(piece, field);  // Рекурсия для повторной попытки
+  }
+}
+
 void userInput(UserAction_t action, bool hold) {
   (void)hold;  // Параметр, если не нужен
 
