@@ -111,7 +111,7 @@ void showGameOverScreen(GameInfo_t *game) {
     }
   }
 }
-void drawField(GameInfo_t *game) {
+void clearField() {
   clear();
   for (int i = 0; i <= ROWS; i++) {
     mvprintw(i, 0, "|");
@@ -125,26 +125,31 @@ void drawField(GameInfo_t *game) {
   mvprintw(0, COLS * 2 + 1, "+");
   mvprintw(ROWS + 1, 0, "+");
   mvprintw(ROWS + 1, COLS * 2 + 1, "+");
+}
 
+void drawStaticField(int **field) {
   for (int i = 0; i < ROWS; i++) {
     for (int j = 0; j < COLS; j++) {
-      if (game->field[i][j]) {
+      if (field[i][j]) {
         mvprintw(i + 1, j * 2 + 1, "[]");
       }
     }
   }
+}
 
-  Piece *currentPiece = getCurrentPiece();
-  if (currentPiece) {
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        if (currentPiece->shape[i][j]) {
-          mvprintw(currentPiece->y + i + 1, (currentPiece->x + j) * 2 + 1,
-                   "[]");
-        }
+void drawPiece(Piece *piece) {
+  if (!piece) return;
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (piece->shape[i][j]) {
+        mvprintw(piece->y + i + 1, (piece->x + j) * 2 + 1, "[]");
       }
     }
   }
+}
+
+void drawGameInfo(GameInfo_t *game) {
   mvprintw(2, COLS * 2 + 5, "Score: %d", game->score);
   mvprintw(3, COLS * 2 + 5, "Level: %d", game->level);
   mvprintw(4, COLS * 2 + 5, "High Score: %d", game->high_score);
@@ -156,7 +161,51 @@ void drawField(GameInfo_t *game) {
       }
     }
   }
+}
+
+void drawField(GameInfo_t *game) {
+  clearField();
+  drawStaticField(game->field);
+  drawPiece(getCurrentPiece());
+  drawGameInfo(game);
   refresh();
+}
+
+void fixPartialPiece(int **field, Piece *piece) {
+  for (int i = 3; i >= 0; i--) {  // Начинаем с самой нижней строки фигуры
+    bool hasBlock = false;  // Флаг для проверки наличия блока в строке
+    for (int j = 0; j < 4; j++) {
+      if (piece->shape[i][j]) {
+        hasBlock = true;  // В строке есть блок
+        int newX = piece->x + j;
+        int newY = 0;
+        if (newY >= 0 && newY < ROWS && newX >= 0 && newX < COLS) {
+          // Фиксируем ячейку, если она в пределах поля
+          field[newY][newX] = 1;
+        }
+      }
+    }
+    if (hasBlock) {
+      break;  // После фиксации самой нижней строки выходим из цикла
+    }
+  }
+  free(piece);  // Освобождаем память после фиксации фигуры
+}
+
+bool isSpaceAvailableForFullFix(int **field, Piece *piece) {
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (piece->shape[i][j]) {
+        int newX = piece->x + j;
+        int newY = piece->y + i;
+        if (newY < 0 || newY >= ROWS || newX < 0 || newX >= COLS ||
+            field[newY][newX]) {
+          return false;  // Место недоступно
+        }
+      }
+    }
+  }
+  return true;  // Места достаточно
 }
 
 GameInfo_t updateCurrentState() {
@@ -196,8 +245,14 @@ GameInfo_t updateCurrentState() {
 
       // Проверка конца игры сразу после появления новой фигуры
       if (!canMoveDown(currentPiece, game->field)) {
-        fixPiece(game->field, currentPiece);
-        drawField(game);
+        if (isSpaceAvailableForFullFix(game->field, currentPiece)) {
+          fixPiece(game->field, currentPiece);  // Полная фиксация
+        } else {
+          fixPartialPiece(game->field, currentPiece);  // Частичная фиксация
+        }
+        clearField();
+        drawStaticField(game->field);
+        drawGameInfo(game);
         refresh();
         napms(500);
         showGameOverScreen(game);
