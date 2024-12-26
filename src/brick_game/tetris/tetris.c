@@ -1,44 +1,9 @@
+#include "tetris.h"
+
 #include <locale.h>
-#include <ncurses.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-
-#define ROWS 20
-#define COLS 10
-#define SUCCESS 0
-#define WIN_INIT(size) initNcurses()
-#define GET_USER_INPUT getch()
-
-// перечисление набора именнованных констант
-typedef enum {
-  Start,
-  Pause,
-  Terminate,
-  Left,
-  Right,
-  Up,
-  Down,
-  Action
-} UserAction_t;
-
-// информация о текущем состоянии игры
-typedef struct {
-  int **field;
-  int **next;
-  int score;
-  int high_score;
-  int level;
-  int speed;
-  int pause;
-} GameInfo_t;
-
-typedef struct {
-  int x;
-  int y;
-  int shape[4][4];
-} Piece;
 
 GameInfo_t *getGameInfo() {
   static GameInfo_t game;
@@ -52,10 +17,7 @@ Piece *getCurrentPiece() {
   }
   return piece;
 }
-void game_loop();
 
-bool canMoveDown(Piece *piece, int **field);
-void userInput(UserAction_t action, bool hold);
 bool showStartScreen() {
   clear();
 
@@ -79,11 +41,6 @@ bool showStartScreen() {
   }
 }
 
-GameInfo_t updateCurrentState();
-
-void drawField(GameInfo_t *game);
-int clearFullLines(int **field);
-void fixPiece(int **field, Piece *piece);
 void initNcurses() {
   initscr();
   cbreak();
@@ -92,7 +49,6 @@ void initNcurses() {
   curs_set(0);
   timeout(50);
 }
-void cleanupNcurses(GameInfo_t *game);
 
 void showGameOverScreen(GameInfo_t *game) {
   clear();  // Очистка экрана
@@ -111,6 +67,7 @@ void showGameOverScreen(GameInfo_t *game) {
     }
   }
 }
+
 void clearField() {
   clear();
   for (int i = 0; i <= ROWS; i++) {
@@ -531,9 +488,11 @@ void cleanupNcurses(GameInfo_t *game) {
   }
   free(game->next);
 }
+
 void cleanupNcursesstart() {
   endwin();  // Завершение работы с ncurses
 }
+
 int main(void) {
   WIN_INIT(50);
   setlocale(LC_ALL, "");
@@ -582,5 +541,5 @@ void game_loop() {
     }
   }
 
-  cleanupNcurses(game);  // Завершение работы
+  cleanupNcurses(game);
 }
