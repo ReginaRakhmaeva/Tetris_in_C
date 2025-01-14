@@ -44,23 +44,8 @@ typedef struct {
 void rotatePiece(Piece *piece, int **field);
 GameInfo_t *getGameInfo();
 Piece *getCurrentPiece();
-void spawnNewPiece(Piece **piece);
-void game_loop();
-bool canMoveDown(Piece *piece, int **field);
-void userInput(UserAction_t action, bool hold);
-void renderStartScreen();
-bool handleStartScreenInput();
 GameInfo_t updateCurrentState();
-int clearFullLines(int **field);
-void fixPiece(int **field, Piece *piece);
 void initNcurses();
 void cleanupNcurses(GameInfo_t *game);
-void fixPartialPiece(int **field, Piece *piece);
-bool isSpaceAvailableForFullFix(int **field, Piece *piece);
-bool isSquarePiece(Piece *piece);
-void rotateMatrix90(int src[4][4], int dest[4][4]);
-bool isRotationValid(Piece *piece, int rotated[4][4], int offsetX, int offsetY,
-                     int **field);
-void applyRotation(Piece *piece, int rotated[4][4], int offsetX, int offsetY);
 
 #endif  // TETRIS_H

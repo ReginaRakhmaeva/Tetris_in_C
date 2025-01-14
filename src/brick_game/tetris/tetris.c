@@ -7,6 +7,7 @@
 
 #include "backend.h"
 #include "frontend.h"
+#include "fsm.h"
 #include "tetris.h"
 
 GameInfo_t *getGameInfo() {
