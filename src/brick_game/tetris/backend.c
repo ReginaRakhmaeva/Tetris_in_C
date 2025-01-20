@@ -2,6 +2,27 @@
 
 #include <stdlib.h>
 
+// Чтение максимального счета из файла
+int loadHighScore() {
+  FILE *file = fopen(HIGH_SCORE_FILE, "r");
+  if (!file) {
+    return 0;  // Если файл не найден, вернуть 0
+  }
+  int highScore = 0;
+  fscanf(file, "%d", &highScore);
+  fclose(file);
+  return highScore;
+}
+
+// Сохранение максимального счета в файл
+void saveHighScore(int highScore) {
+  FILE *file = fopen(HIGH_SCORE_FILE, "w");
+  if (file) {
+    fprintf(file, "%d", highScore);
+    fclose(file);
+  }
+}
+
 // Реализация функций логики
 void spawnNewPiece(Piece **piece) {
   static const int shapes[7][4][4] = {
@@ -177,7 +198,7 @@ GameInfo_t updateCurrentState() {
   if (!game->level) {
     game->level = 1;
     game->score = 0;
-    game->high_score = 0;
+    game->high_score = loadHighScore();
     game->speed = 20 + game->level * 0.5;
     game->pause = 0;
 
@@ -197,16 +218,15 @@ GameInfo_t updateCurrentState() {
       currentPiece->y++;
     } else {
       fixPiece(game->field, currentPiece);
-      drawField(game);  // Обновляем экран перед проверкой завершения игры
-      refresh();  // Принудительно обновляем экран
+      drawField(game);
+      refresh();
       spawnNewPiece(&currentPiece);
 
-      // Проверка конца игры сразу после появления новой фигуры
       if (!canMoveDown(currentPiece, game->field)) {
         if (isSpaceAvailableForFullFix(game->field, currentPiece)) {
-          fixPiece(game->field, currentPiece);  // Полная фиксация
+          fixPiece(game->field, currentPiece);
         } else {
-          fixPartialPiece(game->field, currentPiece);  // Частичная фиксация
+          fixPartialPiece(game->field, currentPiece);
         }
         clearField();
         drawStaticField(game->field);
@@ -214,7 +234,7 @@ GameInfo_t updateCurrentState() {
         refresh();
         napms(500);
         game->pause = true;
-        ungetch('q');  // Прямо передать 'q' как ввод
+        ungetch('q');
         fl = false;
       }
     }
@@ -222,6 +242,10 @@ GameInfo_t updateCurrentState() {
   if (fl) {
     int lines_cleared = clearFullLines(game->field);
     game->score += lines_cleared * 100;
+    if (game->score > game->high_score) {
+      game->high_score = game->score;
+      saveHighScore(game->high_score);
+    }
     if (game->level < 10) game->level = game->score / 600 + 1;
     game->speed = 1 + game->level;
   }
@@ -234,6 +258,16 @@ bool isSquarePiece(Piece *piece) {
          piece->shape[0][1] == 1 && piece->shape[1][0] == 1;
 }
 
+bool handleStartScreenInput() {
+  while (true) {
+    int ch = processUserInput();
+    if (ch == '\n') {        // Нажата клавиша Enter
+      return true;           // Начать игру
+    } else if (ch == 'q') {  // Нажата клавиша q
+      return false;          // Выйти из игры
+    }
+  }
+}
 void rotateMatrix90(int src[4][4], int dest[4][4]) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {

@@ -1,11 +1,10 @@
 #ifndef FRONTEND_H
 #define FRONTEND_H
 
+#include "backend.h"
 #include "tetris.h"
-
 // Функции отображения
 void renderStartScreen();
-bool handleStartScreenInput();
 bool showStartScreen();
 void drawField(GameInfo_t *game);
 void drawStaticField(int **field);

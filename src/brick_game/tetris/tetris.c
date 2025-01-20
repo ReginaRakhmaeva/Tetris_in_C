@@ -48,6 +48,8 @@ void cleanupNcursesstart() {
   endwin();  // Завершение работы с ncurses
 }
 
+int processUserInput() { return GET_USER_INPUT; }
+
 int main(void) {
   WIN_INIT(50);
   setlocale(LC_ALL, "");

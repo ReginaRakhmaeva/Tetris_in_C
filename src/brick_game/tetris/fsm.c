@@ -8,7 +8,7 @@ void game_loop() {
   int signal = 0;
 
   while (break_flag) {
-    signal = GET_USER_INPUT;  // Получаем пользовательский ввод
+    signal = processUserInput();
     switch (signal) {
       case KEY_LEFT:
         userInput(Left, false);
@@ -85,4 +85,9 @@ void userInput(UserAction_t action, bool hold) {
     default:
       break;
   }
+}
+
+int **getFieldMatrix() {
+  GameInfo_t *game = getGameInfo();
+  return game->field;  // Возвращаем матрицу игрового поля
 }

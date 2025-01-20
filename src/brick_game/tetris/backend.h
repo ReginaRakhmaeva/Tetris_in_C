@@ -1,8 +1,10 @@
 #ifndef BACKEND_H
 #define BACKEND_H
 
+#include <string.h>
 #include <time.h>
 
+#define HIGH_SCORE_FILE "highscore.txt"
 #include "frontend.h"
 #include "tetris.h"
 //  Функции обработки логики игры
@@ -14,6 +16,8 @@ bool isSpaceAvailableForFullFix(int **field, Piece *piece);
 void fixPiece(int **field, Piece *piece);
 void fixPartialPiece(int **field, Piece *piece);
 int clearFullLines(int **field);
+bool handleStartScreenInput();
+
 GameInfo_t updateCurrentState();
 void rotateMatrix90(int src[4][4], int dest[4][4]);
 bool isRotationValid(Piece *piece, int rotated[4][4], int offsetX, int offsetY,
