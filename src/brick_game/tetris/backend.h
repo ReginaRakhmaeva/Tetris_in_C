@@ -5,7 +5,7 @@
 #include <time.h>
 
 #define HIGH_SCORE_FILE "highscore.txt"
-#include "frontend.h"
+#include "../../gui/cli/frontend.h"
 #include "tetris.h"
 //  Функции обработки логики игры
 void spawnNewPiece(Piece **piece);
@@ -25,5 +25,9 @@ bool isRotationValid(Piece *piece, int rotated[4][4], int offsetX, int offsetY,
 void applyRotation(Piece *piece, int rotated[4][4], int offsetX, int offsetY);
 void rotatePiece(Piece *piece, int **field);
 bool isSquarePiece(Piece *piece);
-
+void updateScoreAndLevel(GameInfo_t *game, int linesCleared);
+void handleGameOver(GameInfo_t *game, Piece *currentPiece);
+bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
+                         clock_t *lastTick);
+void initializeGame(GameInfo_t *game);
 #endif  // BACKEND_H

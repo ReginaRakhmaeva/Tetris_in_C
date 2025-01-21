@@ -1,7 +1,49 @@
 #include "frontend.h"
 
+#include <locale.h>
 #include <ncurses.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
+int main(void) {
+  WIN_INIT(50);
+  setlocale(LC_ALL, "");
+  if (!showStartScreen()) {
+    cleanupNcursesstart();
+  } else
+    game_loop();
+
+  return SUCCESS;
+}
+
+void initNcurses() {
+  initscr();
+  cbreak();
+  noecho();
+  keypad(stdscr, TRUE);
+  curs_set(0);
+  timeout(50);
+}
+
+void cleanupNcurses(GameInfo_t *game) {
+  endwin();
+  for (int i = 0; i < ROWS; i++) {
+    free(game->field[i]);
+  }
+  free(game->field);
+
+  for (int i = 0; i < 4; i++) {
+    free(game->next[i]);
+  }
+  free(game->next);
+}
+
+void cleanupNcursesstart() {
+  endwin();  // Завершение работы с ncurses
+}
+
+int processUserInput() { return GET_USER_INPUT; }
 void clearField() {
   clear();
   for (int i = 0; i <= ROWS; i++) {

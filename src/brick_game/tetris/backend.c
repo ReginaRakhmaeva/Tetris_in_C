@@ -190,67 +190,80 @@ int clearFullLines(int **field) {
 GameInfo_t updateCurrentState() {
   GameInfo_t *game = getGameInfo();
   Piece *currentPiece = getCurrentPiece();
-  bool fl = true;
-  if (game->pause) {
-    return *game;  // Если игра на паузе, просто возвращаем текущее состояние
-  }
-
-  if (!game->level) {
-    game->level = 1;
-    game->score = 0;
-    game->high_score = loadHighScore();
-    game->speed = 20 + game->level * 0.5;
-    game->pause = 0;
-
-    game->field = (int **)malloc(sizeof(int *) * ROWS);
-    for (int i = 0; i < ROWS; i++) {
-      game->field[i] = (int *)calloc(COLS, sizeof(int));
-    }
-  }
-
   static clock_t lastTick = 0;
   if (lastTick == 0) lastTick = clock();
 
-  double elapsed = (double)(clock() - lastTick) / CLOCKS_PER_SEC;
-  if (elapsed >= 0.05 / game->speed) {
-    lastTick = clock();
-    if (canMoveDown(currentPiece, game->field)) {
-      currentPiece->y++;
-    } else {
-      fixPiece(game->field, currentPiece);
-      drawField(game);
-      refresh();
-      spawnNewPiece(&currentPiece);
+  if (game->pause) {
+    return *game;  // Игра на паузе
+  }
 
-      if (!canMoveDown(currentPiece, game->field)) {
-        if (isSpaceAvailableForFullFix(game->field, currentPiece)) {
-          fixPiece(game->field, currentPiece);
-        } else {
-          fixPartialPiece(game->field, currentPiece);
-        }
-        clearField();
-        drawStaticField(game->field);
-        drawGameInfo(game);
-        refresh();
-        napms(500);
-        game->pause = true;
-        ungetch('q');
-        fl = false;
-      }
-    }
+  if (!game->level) {
+    initializeGame(game);  // Инициализация игры
   }
-  if (fl) {
-    int lines_cleared = clearFullLines(game->field);
-    game->score += lines_cleared * 100;
-    if (game->score > game->high_score) {
-      game->high_score = game->score;
-      saveHighScore(game->high_score);
-    }
-    if (game->level < 10) game->level = game->score / 600 + 1;
-    game->speed = 1 + game->level;
+
+  if (!updatePiecePosition(currentPiece, game, &lastTick)) {
+    drawField(game);
+    refresh();
+    spawnNewPiece(&currentPiece);
+    handleGameOver(game, currentPiece);
   }
+
+  int linesCleared = clearFullLines(game->field);
+  updateScoreAndLevel(game, linesCleared);
 
   return *game;
+}
+void initializeGame(GameInfo_t *game) {
+  game->level = 1;
+  game->score = 0;
+  game->high_score = loadHighScore();
+  game->speed = 20 + game->level * 0.5;
+  game->pause = 0;
+
+  game->field = (int **)malloc(sizeof(int *) * ROWS);
+  for (int i = 0; i < ROWS; i++) {
+    game->field[i] = (int *)calloc(COLS, sizeof(int));
+  }
+}
+bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
+                         clock_t *lastTick) {
+  double elapsed = (double)(clock() - *lastTick) / CLOCKS_PER_SEC;
+  if (elapsed >= 0.05 / game->speed) {
+    *lastTick = clock();
+    if (canMoveDown(currentPiece, game->field)) {
+      currentPiece->y++;
+      return true;
+    } else {
+      fixPiece(game->field, currentPiece);
+      return false;
+    }
+  }
+  return true;
+}
+void handleGameOver(GameInfo_t *game, Piece *currentPiece) {
+  if (!canMoveDown(currentPiece, game->field)) {
+    if (isSpaceAvailableForFullFix(game->field, currentPiece)) {
+      fixPiece(game->field, currentPiece);
+    } else {
+      fixPartialPiece(game->field, currentPiece);
+    }
+    clearField();
+    drawStaticField(game->field);
+    drawGameInfo(game);
+    refresh();
+    napms(500);
+    game->pause = true;
+    ungetch('q');
+  }
+}
+void updateScoreAndLevel(GameInfo_t *game, int linesCleared) {
+  game->score += linesCleared * 100;
+  if (game->score > game->high_score) {
+    game->high_score = game->score;
+    saveHighScore(game->high_score);
+  }
+  if (game->level < 10) game->level = game->score / 600 + 1;
+  game->speed = 1 + game->level;
 }
 
 bool isSquarePiece(Piece *piece) {

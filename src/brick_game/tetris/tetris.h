@@ -41,12 +41,8 @@ typedef struct {
 } Piece;
 
 // Функции
-void rotatePiece(Piece *piece, int **field);
 GameInfo_t *getGameInfo();
 Piece *getCurrentPiece();
 GameInfo_t updateCurrentState();
-void initNcurses();
-void cleanupNcurses(GameInfo_t *game);
-int processUserInput();
 
 #endif  // TETRIS_H

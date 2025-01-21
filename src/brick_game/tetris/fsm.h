@@ -1,8 +1,8 @@
 #ifndef FSM_H
 #define FSM_H
 
+#include "../../gui/cli/frontend.h"
 #include "backend.h"
-#include "frontend.h"
 #include "tetris.h"
 // Управление состояниями игры
 void game_loop();
