@@ -1,10 +1,4 @@
-#include "tetris.h"
-
-#include "../../gui/cli/frontend.h"
-#include "backend.h"
-#include "fsm.h"
-#include "tetris.h"
-
+#include "game_logic.h"
 GameInfo_t *getGameInfo() {
   static GameInfo_t game;
   return &game;

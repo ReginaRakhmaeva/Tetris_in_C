@@ -1,21 +1,5 @@
-#include "frontend.h"
-
-#include <locale.h>
-#include <ncurses.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-
-int main(void) {
-  WIN_INIT(50);
-  setlocale(LC_ALL, "");
-  if (!showStartScreen()) {
-    cleanupNcursesstart();
-  } else
-    game_loop();
-
-  return SUCCESS;
-}
+#include "../../brick_game/tetris/game_logic.h"
+#include "cli_interface.h"
 
 void initNcurses() {
   initscr();
@@ -25,7 +9,22 @@ void initNcurses() {
   curs_set(0);
   timeout(50);
 }
-
+void handleGameOver(GameInfo_t *game, Piece *currentPiece) {
+  if (!canMoveDown(currentPiece, game->field)) {
+    if (isSpaceAvailableForFullFix(game->field, currentPiece)) {
+      fixPiece(game->field, currentPiece);
+    } else {
+      fixPartialPiece(game->field, currentPiece);
+    }
+    clearField();
+    drawStaticField(game->field);
+    drawGameInfo(game);
+    refresh();
+    napms(500);
+    game->pause = true;
+    ungetch('q');
+  }
+}
 void cleanupNcurses(GameInfo_t *game) {
   endwin();
   for (int i = 0; i < ROWS; i++) {
@@ -132,14 +131,6 @@ void displayGameOverScreen(GameInfo_t *game) {
   mvprintw(ROWS / 2 + 2, COLS / 2 - 7, "or q to Quit");
 
   refresh();
-}
-
-bool handleGameOverInput() {
-  int ch = processUserInput();
-  if (ch == 'q') {
-    return false;
-  }
-  return true;
 }
 
 void showGameOverScreen(GameInfo_t *game) {
