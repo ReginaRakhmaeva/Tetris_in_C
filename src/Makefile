@@ -1,8 +1,7 @@
 # Компилятор и флаги
 CC = gcc
-CFLAGS = -Wall -Werror -Wextra -std=c11
+CFLAGS = -Wall -Werror -Wextra -std=c11 -fprofile-arcs -ftest-coverage
 LDFLAGS = -lncurses -lcheck -lm -lpthread -lsubunit
-
 
 # Папки
 OBJ_DIR = ../build
@@ -10,6 +9,7 @@ SRC_DIR = .
 BRICK_GAME_DIR = $(SRC_DIR)/brick_game/tetris
 GUI_CLI_DIR = $(SRC_DIR)/gui/cli
 TEST_DIR = $(SRC_DIR)/tests
+REPORT_DIR = $(SRC_DIR)/gcov_report
 
 # Цели
 EXE = ../tetris
@@ -58,7 +58,18 @@ $(TEST_OBJ): $(TEST_SRC)
 	@mkdir -p $(OBJ_DIR)/$(dir $<)
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# Цель для отчета покрытия кода
+gcov_report: clean $(TEST_EXE)
+	@mkdir -p $(REPORT_DIR)
+	./$(TEST_EXE)
+	gcov -o $(OBJ_DIR) $(TEST_OBJ_FILES) > $(REPORT_DIR)/coverage.txt
+	lcov --capture --directory $(OBJ_DIR) --output-file $(REPORT_DIR)/coverage.info
+	genhtml $(REPORT_DIR)/coverage.info --output-directory $(REPORT_DIR)
+	@echo "HTML report generated in $(REPORT_DIR)"
+
 # Очистка
 clean:
 	rm -rf $(OBJ_DIR)/*
 	rm -f $(EXE) $(LIB) $(TEST_EXE)
+	rm -rf *.gcda *.gcno
+	rm -rf $(REPORT_DIR)

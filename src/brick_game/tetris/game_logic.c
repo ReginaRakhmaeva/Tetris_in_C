@@ -32,6 +32,7 @@ void initializeGame(GameInfo_t *game) {
     game->field[i] = (int *)calloc(COLS, sizeof(int));
   }
 }
+
 bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
                          clock_t *lastTick) {
   double elapsed = (double)(clock() - *lastTick) / CLOCKS_PER_SEC;
