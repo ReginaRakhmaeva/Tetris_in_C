@@ -295,19 +295,104 @@ START_TEST(test_isRotationValid) {
 END_TEST
 
 // Тест для rotatePiece
-// START_TEST(test_rotatePiece) {
-//   Piece piece = {
-//       5, 5, {{1, 1, 0, 0}, {1, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
-//   int expected[4][4] = {{1, 1, 0, 0}, {1, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0,
-//   0}}; int **field = initializeField(); rotatePiece(&piece, field);
+START_TEST(test_rotatePiece) {
+  int **field = initializeField();
 
-//   for (int i = 0; i < 4; i++) {
-//     for (int j = 0; j < 4; j++) {
-//       ck_assert_int_eq(piece->shape[i][j], expected[i][j]);
-//     }
-//   }
-// }
-// END_TEST
+  field[19][5] = 1;
+
+  Piece piece = {5,
+                 17,
+                 {
+                     {1, 1, 1, 0},
+                     {0, 1, 0, 0},
+                     {0, 0, 0, 0},
+                     {0, 0, 0, 0},
+                 }};
+
+  int expected[4][4] = {
+      {0, 0, 0, 1},
+      {0, 0, 1, 1},
+      {0, 0, 0, 1},
+      {0, 0, 0, 0},
+  };
+
+  int expected2[4][4] = {
+      {0, 0, 0, 0},
+      {0, 0, 0, 0},
+      {0, 0, 1, 0},
+      {0, 1, 1, 1},
+  };
+
+  int expected3[4][4] = {
+      {1, 1, 1, 0},
+      {0, 1, 0, 0},
+      {0, 0, 0, 0},
+      {0, 0, 0, 0},
+  };
+
+  rotatePiece(&piece, field);
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      ck_assert_int_eq(piece.shape[i][j], expected[i][j]);
+    }
+  }
+
+  piece.x = 7;
+  piece.y = 5;
+
+  rotatePiece(&piece, field);
+
+  ck_assert_int_le(piece.x, COLS);
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      ck_assert_int_eq(piece.shape[i][j], expected2[i][j]);
+    }
+  }
+
+  rotatePiece(&piece, field);
+
+  piece.x = 0;
+  piece.y = 5;
+
+  rotatePiece(&piece, field);
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      ck_assert_int_eq(piece.shape[i][j], expected3[i][j]);
+    }
+  }
+
+  ck_assert_int_ge(piece.x, 0);
+
+  Piece squarePiece = {5,
+                       5,
+                       {
+                           {1, 1, 0, 0},
+                           {1, 1, 0, 0},
+                           {0, 0, 0, 0},
+                           {0, 0, 0, 0},
+                       }};
+
+  int squareExpected[4][4] = {
+      {1, 1, 0, 0},
+      {1, 1, 0, 0},
+      {0, 0, 0, 0},
+      {0, 0, 0, 0},
+  };
+
+  rotatePiece(&squarePiece, field);
+
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      ck_assert_int_eq(squarePiece.shape[i][j], squareExpected[i][j]);
+    }
+  }
+
+  freeField(field);
+}
+END_TEST
 
 // Тест для applyRotation
 START_TEST(test_applyRotation) {
@@ -327,6 +412,37 @@ START_TEST(test_applyRotation) {
   ck_assert_int_eq(piece.y, 6);
 }
 END_TEST
+
+START_TEST(test_fixPartialPiece) {
+  int **field = initializeField();
+
+  Piece piece = {5,
+                 6,
+                 {
+                     {1, 1, 0, 0},
+                     {1, 1, 1, 0},
+                     {1, 1, 1, 1},
+                     {0, 0, 0, 0},
+                 }};
+
+  fixPartialPiece(field, &piece);
+
+  ck_assert_int_eq(field[0][5], 1);
+  ck_assert_int_eq(field[0][6], 1);
+  ck_assert_int_eq(field[0][7], 1);
+  ck_assert_int_eq(field[0][8], 1);
+
+  for (int i = 0; i < ROWS; i++) {
+    for (int j = 0; j < COLS; j++) {
+      if (i != 0 || j < 5 || j > 8) {
+        ck_assert_int_eq(field[i][j], 0);
+      }
+    }
+  }
+  freeField(field);
+}
+END_TEST
+
 Suite *tetris_suite(void) {
   Suite *s = suite_create("Tetris");
   TCase *tc_core = tcase_create("Core");
@@ -343,6 +459,7 @@ Suite *tetris_suite(void) {
   tcase_add_test(tc_core, test_isRotationValid);
   tcase_add_test(tc_core, test_rotatePiece);
   tcase_add_test(tc_core, test_applyRotation);
+  tcase_add_test(tc_core, test_fixPartialPiece);
 
   suite_add_tcase(s, tc_core);
   return s;
