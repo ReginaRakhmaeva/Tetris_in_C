@@ -4,10 +4,9 @@ void game_loop() {
   GameInfo_t *game = getGameInfo();
   userInput(Start, false);  // Начинаем игру
   bool break_flag = true;
-  int signal = 0;
 
   while (break_flag) {
-    signal = processUserInput();
+    int signal = processUserInput();
     switch (signal) {
       case KEY_LEFT:
         userInput(Left, false);

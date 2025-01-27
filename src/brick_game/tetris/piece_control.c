@@ -6,6 +6,45 @@
 #include "../../gui/cli/cli_interface.h"
 #include "game_logic.h"
 
+// Инициализация `next`, если он пустой
+void initializeNext(GameInfo_t *game, const int shapes[7][4][4]) {
+  if (!game->next) {
+    game->next = (int **)malloc(sizeof(int *) * 4);
+    for (int i = 0; i < 4; i++) {
+      game->next[i] = (int *)calloc(4, sizeof(int));
+    }
+    int shapeIndex = rand() % 7;
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        game->next[i][j] = shapes[shapeIndex][i][j];
+      }
+    }
+  }
+}
+
+// Создание текущей фигуры из `next`
+void createCurrentPiece(Piece **piece, GameInfo_t *game) {
+  *piece = (Piece *)malloc(sizeof(Piece));
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      (*piece)->shape[i][j] = game->next[i][j];
+    }
+  }
+  (*piece)->x = COLS / 2 - 2;
+  (*piece)->y = 0;
+}
+
+// Обновление `next` новой фигурой
+void updateNext(GameInfo_t *game, const int shapes[7][4][4]) {
+  int shapeIndex = rand() % 7;
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      game->next[i][j] = shapes[shapeIndex][i][j];
+    }
+  }
+}
+
+// Основная функция для создания новой фигуры
 void spawnNewPiece(Piece **piece) {
   static const int shapes[7][4][4] = {
       {{1, 1, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},  // Линия
@@ -19,37 +58,9 @@ void spawnNewPiece(Piece **piece) {
 
   GameInfo_t *game = getGameInfo();
 
-  // Если `next` пустой, создаем первую фигуру
-  if (!game->next) {
-    game->next = (int **)malloc(sizeof(int *) * 4);
-    for (int i = 0; i < 4; i++) {
-      game->next[i] = (int *)calloc(4, sizeof(int));
-    }
-    int shapeIndex = rand() % 7;
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        game->next[i][j] = shapes[shapeIndex][i][j];
-      }
-    }
-  }
-
-  // Создаем текущую фигуру из `next`
-  *piece = (Piece *)malloc(sizeof(Piece));
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      (*piece)->shape[i][j] = game->next[i][j];
-    }
-  }
-  (*piece)->x = COLS / 2 - 2;
-  (*piece)->y = 0;
-
-  // Обновляем `next`
-  int shapeIndex = rand() % 7;
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      game->next[i][j] = shapes[shapeIndex][i][j];
-    }
-  }
+  initializeNext(game, shapes);
+  createCurrentPiece(piece, game);
+  updateNext(game, shapes);
 }
 
 bool canMoveLeft(Piece *piece, int **field) {
@@ -191,4 +202,20 @@ void applyRotation(Piece *piece, int rotated[4][4], int offsetX, int offsetY) {
   }
   piece->x += offsetX;
   piece->y += offsetY;
+}
+
+void fixPartialPiece(int **field, Piece *piece) {
+  bool hasBlock = false;
+  for (int i = 3; i >= 0 && !hasBlock; i--) {
+    for (int j = 0; j < 4; j++) {
+      if (piece->shape[i][j]) {
+        hasBlock = true;
+        int newX = piece->x + j;
+        if (newX >= 0 && newX < COLS) {
+          field[0][newX] = 1;
+        }
+      }
+    }
+  }
+  free(piece);
 }

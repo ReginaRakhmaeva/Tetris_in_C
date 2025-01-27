@@ -46,7 +46,7 @@ $(LIB): $(OBJ_FILES)
 	ranlib $@
 
 # Цель для тестов
-test: $(TEST_EXE)
+test: clean $(TEST_EXE)
 	./$(TEST_EXE)
 
 # Сборка исполняемого файла для тестов (только для brick_game/tetris)
@@ -67,9 +67,25 @@ gcov_report: clean $(TEST_EXE)
 	genhtml $(REPORT_DIR)/coverage.info --output-directory $(REPORT_DIR)
 	@echo "HTML report generated in $(REPORT_DIR)"
 
+
+# Цель для valgrind (проверка на утечки памяти в brick_game/tetris)
+valgrind: clean $(LIB)
+	$(CC) $(CFLAGS) $(TEST_DIR)/*.c $(BRICK_GAME_DIR)/*.c -o $(TEST_EXE) $(LDFLAGS)
+	valgrind -s --leak-check=full --track-origins=yes --show-reachable=yes ./$(TEST_EXE)
+
+# Цель для cppcheck (проверка исходников всего проекта)
+cppcheck:
+	cppcheck --enable=all --std=c11 --language=c  $(BRICK_GAME_DIR)/*.c $(GUI_CLI_DIR)/*.c 
+
+# Цель для valgrind (проверка на утечки памяти для всего проекта)
+valgrindall: clean $(LIB)
+	$(CC) $(CFLAGS)  $(BRICK_GAME_DIR)/*.c $(GUI_CLI_DIR)/*.c  -o $(TEST_EXE) $(LDFLAGS)
+	valgrind -s --leak-check=full --track-origins=yes --show-reachable=yes ./$(TEST_EXE)
+
 # Очистка
 clean:
 	rm -rf $(OBJ_DIR)/*
 	rm -f $(EXE) $(LIB) $(TEST_EXE)
 	rm -rf *.gcda *.gcno
 	rm -rf $(REPORT_DIR)
+	rm -rf ../*.gcda ../*.gcno

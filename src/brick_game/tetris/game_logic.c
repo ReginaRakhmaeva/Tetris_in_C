@@ -35,18 +35,19 @@ void initializeGame(GameInfo_t *game) {
 
 bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
                          clock_t *lastTick) {
+  bool canContinue = true;
   double elapsed = (double)(clock() - *lastTick) / CLOCKS_PER_SEC;
+
   if (elapsed >= 0.05 / game->speed) {
     *lastTick = clock();
     if (canMoveDown(currentPiece, game->field)) {
       currentPiece->y++;
-      return true;
     } else {
       fixPiece(game->field, currentPiece);
-      return false;
+      canContinue = false;
     }
   }
-  return true;
+  return canContinue;
 }
 
 void updateScoreAndLevel(GameInfo_t *game, int linesCleared) {
@@ -64,10 +65,9 @@ int clearFullLines(int **field) {
 
   for (int i = 0; i < ROWS; i++) {
     bool full = true;
-    for (int j = 0; j < COLS; j++) {
+    for (int j = 0; j < COLS && full; j++) {
       if (!field[i][j]) {
         full = false;
-        break;
       }
     }
 
@@ -83,42 +83,23 @@ int clearFullLines(int **field) {
       }
     }
   }
-
   return cleared;
 }
 
 bool isSpaceAvailableForFullFix(int **field, Piece *piece) {
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
+  bool isAvailable = true;
+
+  for (int i = 0; i < 4 && isAvailable; i++) {
+    for (int j = 0; j < 4 && isAvailable; j++) {
       if (piece->shape[i][j]) {
         int newX = piece->x + j;
         int newY = piece->y + i;
         if (newY < 0 || newY >= ROWS || newX < 0 || newX >= COLS ||
             field[newY][newX]) {
-          return false;  // Место недоступно
+          isAvailable = false;  // Место недоступно
         }
       }
     }
   }
-  return true;  // Места достаточно
-}
-
-void fixPartialPiece(int **field, Piece *piece) {
-  for (int i = 3; i >= 0; i--) {
-    bool hasBlock = false;
-    for (int j = 0; j < 4; j++) {
-      if (piece->shape[i][j]) {
-        hasBlock = true;
-        int newX = piece->x + j;
-        int newY = 0;
-        if (newY >= 0 && newY < ROWS && newX >= 0 && newX < COLS) {
-          field[newY][newX] = 1;
-        }
-      }
-    }
-    if (hasBlock) {
-      break;
-    }
-  }
-  free(piece);
+  return isAvailable;
 }

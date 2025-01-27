@@ -125,47 +125,73 @@ START_TEST(test_save_high_score) {
 }
 END_TEST
 
-// START_TEST(test_update_piece_position) {
-//   // Инициализация игры
+START_TEST(test_update_piece_position) {
+  GameInfo_t game = {
+      .field = initializeField(),
+      .score = 0,
+      .high_score = 0,
+      .level = 1,
+      .speed = 2,
+  };
+
+  Piece piece = {
+      .x = 4,
+      .y = 0,
+      .shape =
+          {
+              {1, 1, 0, 0},
+              {1, 1, 0, 0},
+              {0, 0, 0, 0},
+              {0, 0, 0, 0},
+          },
+  };
+
+  clock_t lastTick = clock();
+  while ((double)(clock() - lastTick) / CLOCKS_PER_SEC < 0.05 / game.speed) {
+  }
+
+  ck_assert(updatePiecePosition(&piece, &game, &lastTick) == true);
+  ck_assert_int_eq(piece.y, 1);
+
+  piece.y = ROWS - 2;
+  for (int i = 0; i < COLS; i++) {
+    game.field[ROWS - 1][i] = 1;
+  }
+
+  ck_assert_int_eq(piece.y, ROWS - 2);
+
+  lastTick = clock();
+  ck_assert_int_eq(piece.y, ROWS - 2);
+
+  game.speed = 4;
+  lastTick = clock() - CLOCKS_PER_SEC / 4;
+  ck_assert(updatePiecePosition(&piece, &game, &lastTick) == false);
+  ck_assert_int_eq(game.field[ROWS - 2][4], 1);
+
+  freeField(game.field);
+}
+END_TEST
+
+// Тест для функции initializeGame
+// START_TEST(test_initialize_game) {
 //   GameInfo_t game;
-//   game.speed = 1.0;
 
-//   // Создание и инициализация поля
-//   game.field = (int **)malloc(sizeof(int *) * ROWS);
+//   initializeGame(&game);
+
+//   ck_assert_int_eq(game.level, 1);
+//   ck_assert_int_eq(game.score, 0);
+//   ck_assert_int_eq(game.high_score, 0);
+//   ck_assert_float_eq(game.speed, 20);
+//   ck_assert_int_eq(game.pause, 0);
+
+//   ck_assert_ptr_nonnull(game.field);
 //   for (int i = 0; i < ROWS; i++) {
-//     game.field[i] = (int *)calloc(COLS, sizeof(int));
+//     ck_assert_ptr_nonnull(game.field[i]);
+//     for (int j = 0; j < COLS; j++) {
+//       ck_assert_int_eq(game.field[i][j], 0);
+//     }
 //   }
 
-//   // Создание фигуры
-//   Piece currentPiece = {0};
-//   currentPiece.x = 5;
-//   currentPiece.y = 0;
-
-//   // Инициализация времени
-//   clock_t lastTick = clock();
-
-//   // Тест 1: Фигура может двигаться вниз
-//   while ((double)(clock() - lastTick) / CLOCKS_PER_SEC < 0.05 / game.speed) {
-//     // Ждем, пока не пройдет время, необходимое для движения
-//   }
-//   bool result = updatePiecePosition(&currentPiece, &game, &lastTick);
-//   ck_assert_int_eq(result, true);
-//   ck_assert_int_eq(currentPiece.y, 1);  // Фигура должна сдвинуться вниз
-
-//   // Тест 2: Фигура не может двигаться вниз
-//   currentPiece.y = ROWS - 2;  // Перемещаем фигуру на предпоследний ряд
-//   for (int i = 0; i < COLS; i++) {
-//     game.field[ROWS - 1][i] = 1;  // Заполняем последний ряд
-//   }
-
-//   while ((double)(clock() - lastTick) / CLOCKS_PER_SEC < 0.05 / game.speed) {
-//     // Ждем снова, чтобы прошло достаточно времени
-//   }
-//   result = updatePiecePosition(&currentPiece, &game, &lastTick);
-//   ck_assert_int_eq(result, false);  // Ожидаем, что функция вернет false
-//   ck_assert_int_eq(currentPiece.y, ROWS - 2);  // Фигура остается на месте
-
-//   // Освобождение памяти
 //   for (int i = 0; i < ROWS; i++) {
 //     free(game.field[i]);
 //   }
@@ -194,10 +220,7 @@ START_TEST(test_fix_piece) {
   ck_assert_int_eq(field[6][5], 1);
   ck_assert_int_eq(field[6][6], 1);
 
-  for (int i = 0; i < ROWS; i++) {
-    free(field[i]);
-  }
-  free(field);
+  freeField(field);
 }
 END_TEST
 
@@ -246,51 +269,45 @@ START_TEST(test_rotateMatrix90) {
 END_TEST
 
 START_TEST(test_isRotationValid) {
-  int field[ROWS][COLS] = {0};
-  int *fieldPtrs[ROWS];
-  for (int i = 0; i < ROWS; i++) {
-    fieldPtrs[i] = field[i];
-  }
-
-  Piece piece = {
-      5, 5, {{1, 1, 0, 0}, {1, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
+  int **field = initializeField();
+  // int field[ROWS][COLS] = {0};
+  // int *fieldPtrs[ROWS];
+  // for (int i = 0; i < ROWS; i++) {
+  //   fieldPtrs[i] = field[i];
+  // }
+  Piece *piece = malloc(sizeof(Piece));
+  *piece =
+      (Piece){5, 5, {{1, 1, 0, 0}, {1, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
   int rotated[4][4] = {
       {0, 0, 1, 1}, {0, 0, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}};  // проверить
 
-  ck_assert(isRotationValid(&piece, rotated, 0, 0, fieldPtrs) == true);
+  ck_assert(isRotationValid(piece, rotated, 0, 0, field) == true);
 
-  piece.x = 0;
-  piece.y = 0;
-  ck_assert(isRotationValid(&piece, rotated, -1, 0, fieldPtrs) ==
+  piece->x = 0;
+  piece->y = 0;
+  ck_assert(isRotationValid(piece, rotated, -1, 0, field) ==
             true);  // проверить
 
-  piece.x = COLS - 2;
-  piece.y = ROWS - 2;
-  ck_assert(isRotationValid(&piece, rotated, 0, 1, fieldPtrs) == false);
+  piece->x = COLS - 2;
+  piece->y = ROWS - 2;
+  ck_assert(isRotationValid(piece, rotated, 0, 1, field) == false);
 
-  piece.x = 5;
-  piece.y = 5;
-  field[6][6] = 1;
-  ck_assert(isRotationValid(&piece, rotated, 0, 0, fieldPtrs) ==
-            true);  // проверить
+  piece->x = 5;
+  piece->y = 5;
+  for (int i = 0; i <= 9; i++) {
+    field[i][7] = 1;
+  }
+  ck_assert(isRotationValid(piece, rotated, 0, 0, field) == false);
 
-  field[6][6] = 0;
-  ck_assert(isRotationValid(&piece, rotated, 0, 0, fieldPtrs) == true);
+  for (int i = 0; i <= 9; i++) {
+    field[i][7] = 0;
+  }
+  ck_assert(isRotationValid(piece, rotated, 0, 0, field) == true);
 
-  piece.x = -1;
-  piece.y = 5;
-  ck_assert(isRotationValid(&piece, rotated, 0, 0, fieldPtrs) ==
-            true);  // проверить
-
-  piece.x = 5;
-  piece.y = -1;
-  ck_assert(isRotationValid(&piece, rotated, 0, 0, fieldPtrs) ==
-            true);  // проверить
-
-  piece.x = 5;
-  piece.y = 5;
+  piece->x = 5;
+  piece->y = 5;
   rotated[1][1] = 0;
-  ck_assert(isRotationValid(&piece, rotated, 0, 0, fieldPtrs) == true);
+  ck_assert(isRotationValid(piece, rotated, 0, 0, field) == true);
 }
 END_TEST
 
@@ -415,17 +432,11 @@ END_TEST
 
 START_TEST(test_fixPartialPiece) {
   int **field = initializeField();
+  Piece *piece1 = malloc(sizeof(Piece));
+  *piece1 =
+      (Piece){5, 6, {{1, 1, 0, 0}, {1, 1, 1, 0}, {1, 1, 1, 1}, {0, 0, 0, 0}}};
 
-  Piece piece = {5,
-                 6,
-                 {
-                     {1, 1, 0, 0},
-                     {1, 1, 1, 0},
-                     {1, 1, 1, 1},
-                     {0, 0, 0, 0},
-                 }};
-
-  fixPartialPiece(field, &piece);
+  fixPartialPiece(field, piece1);
 
   ck_assert_int_eq(field[0][5], 1);
   ck_assert_int_eq(field[0][6], 1);
@@ -439,7 +450,116 @@ START_TEST(test_fixPartialPiece) {
       }
     }
   }
+
   freeField(field);
+}
+END_TEST
+
+START_TEST(test_isSpaceAvailableForFullFix) {
+  int **field = initializeField();
+
+  Piece piece = {5,
+                 5,
+                 {
+                     {1, 1, 0, 0},
+                     {0, 1, 1, 0},
+                     {0, 0, 0, 0},
+                     {0, 0, 0, 0},
+                 }};
+
+  ck_assert_int_eq(isSpaceAvailableForFullFix(field, &piece), true);
+
+  field[6][6] = 1;
+
+  ck_assert_int_eq(isSpaceAvailableForFullFix(field, &piece), false);
+
+  piece.x = 0;
+  piece.y = 0;
+
+  ck_assert_int_eq(isSpaceAvailableForFullFix(field, &piece), true);
+
+  piece.x = -1;
+  piece.y = 0;
+
+  ck_assert_int_eq(isSpaceAvailableForFullFix(field, &piece), false);
+
+  piece.x = 5;
+  piece.y = ROWS - 1;
+
+  ck_assert_int_eq(isSpaceAvailableForFullFix(field, &piece), false);
+  freeField(field);
+}
+END_TEST
+
+START_TEST(test_clearFullLines) {
+  // Инициализация поля
+  int **field = initializeField();
+
+  for (int j = 0; j < COLS; j++) {
+    field[18][j] = 1;
+  }
+
+  for (int j = 0; j < COLS - 1; j++) {
+    field[17][j] = 1;
+  }
+
+  for (int j = 0; j < COLS; j++) {
+    field[19][j] = 1;
+  }
+
+  int cleared = clearFullLines(field);
+  ck_assert_int_eq(cleared, 2);
+
+  for (int j = 0; j < COLS - 1; j++) {
+    ck_assert_int_eq(field[19][j], 1);
+  }
+  ck_assert_int_eq(field[19][COLS - 1], 0);
+
+  for (int i = 0; i < 19; i++) {
+    for (int j = 0; j < COLS; j++) {
+      ck_assert_int_eq(field[i][j], 0);
+    }
+  }
+
+  freeField(field);
+}
+END_TEST
+
+START_TEST(test_updateScoreAndLevel) {
+  GameInfo_t game = {
+      .score = 0,
+      .high_score = 500,
+      .level = 1,
+      .speed = 1,
+  };
+
+  updateScoreAndLevel(&game, 1);
+  ck_assert_int_eq(game.score, 100);
+  ck_assert_int_eq(game.high_score, 500);
+  ck_assert_int_eq(game.level, 1);
+  ck_assert_int_eq(game.speed, 2);
+
+  updateScoreAndLevel(&game, 5);
+  ck_assert_int_eq(game.score, 600);
+  ck_assert_int_eq(game.high_score, 600);
+  ck_assert_int_eq(game.level, 2);
+  ck_assert_int_eq(game.speed, 3);
+
+  game.level = 10;
+  game.score = 6000;
+  updateScoreAndLevel(&game, 3);
+  ck_assert_int_eq(game.score, 6300);
+  ck_assert_int_eq(game.high_score, 6300);
+  ck_assert_int_eq(game.level, 10);
+  ck_assert_int_eq(game.speed, 11);
+
+  game.score = 400;
+  game.high_score = 500;
+  updateScoreAndLevel(&game, 0);
+  ck_assert_int_eq(game.score, 400);
+  ck_assert_int_eq(game.high_score, 500);
+  ck_assert_int_eq(game.level, 10);
+  ck_assert_int_eq(game.speed, 11);
 }
 END_TEST
 
@@ -452,7 +572,8 @@ Suite *tetris_suite(void) {
   tcase_add_test(tc_core, test_can_move_right);
   tcase_add_test(tc_core, test_save_high_score);
   tcase_add_test(tc_core, test_load_high_score);
-  // tcase_add_test(tc_core, test_update_piece_position);
+  tcase_add_test(tc_core, test_update_piece_position);
+  // tcase_add_test(tc_core, test_initialize_game);
   tcase_add_test(tc_core, test_fix_piece);
   tcase_add_test(tc_core, test_isSquarePiece);
   tcase_add_test(tc_core, test_rotateMatrix90);
@@ -460,6 +581,9 @@ Suite *tetris_suite(void) {
   tcase_add_test(tc_core, test_rotatePiece);
   tcase_add_test(tc_core, test_applyRotation);
   tcase_add_test(tc_core, test_fixPartialPiece);
+  tcase_add_test(tc_core, test_isSpaceAvailableForFullFix);
+  tcase_add_test(tc_core, test_clearFullLines);
+  tcase_add_test(tc_core, test_updateScoreAndLevel);
 
   suite_add_tcase(s, tc_core);
   return s;
