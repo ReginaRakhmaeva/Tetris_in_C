@@ -1,3 +1,12 @@
+/**
+ * @file piece_control.c
+ * @brief Управление фигурами в игре Тетрис.
+ *
+ * Этот файл содержит функции для создания, управления, проверки и вращения
+ * фигур в игровом поле Тетрис. Он включает логику генерации новых фигур,
+ * проверки их движения и размещения на игровом поле.
+ */
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,7 +15,12 @@
 #include "../../gui/cli/cli_interface.h"
 #include "game_logic.h"
 
-// Инициализация `next`, если он пустой
+/**
+ * @brief Инициализирует следующую фигуру (`next`), если она не задана.
+ *
+ * @param game Указатель на структуру GameInfo_t, содержащую игровую информацию.
+ * @param shapes Массив фигур, представленных в виде матриц.
+ */
 void initializeNext(GameInfo_t *game, const int shapes[7][4][4]) {
   if (!game->next) {
     game->next = (int **)malloc(sizeof(int *) * 4);
@@ -22,7 +36,12 @@ void initializeNext(GameInfo_t *game, const int shapes[7][4][4]) {
   }
 }
 
-// Создание текущей фигуры из `next`
+/**
+ * @brief Создаёт текущую фигуру из следующей (`next`).
+ *
+ * @param piece Указатель на указатель структуры Piece, представляющей фигуру.
+ * @param game Указатель на структуру GameInfo_t, содержащую игровую информацию.
+ */
 void createCurrentPiece(Piece **piece, GameInfo_t *game) {
   *piece = (Piece *)malloc(sizeof(Piece));
   for (int i = 0; i < 4; i++) {
@@ -34,7 +53,12 @@ void createCurrentPiece(Piece **piece, GameInfo_t *game) {
   (*piece)->y = 0;
 }
 
-// Обновление `next` новой фигурой
+/**
+ * @brief Обновляет следующую фигуру (`next`) новой случайной фигурой.
+ *
+ * @param game Указатель на структуру GameInfo_t, содержащую игровую информацию.
+ * @param shapes Массив фигур, представленных в виде матриц.
+ */
 void updateNext(GameInfo_t *game, const int shapes[7][4][4]) {
   int shapeIndex = rand() % 7;
   for (int i = 0; i < 4; i++) {
@@ -44,7 +68,11 @@ void updateNext(GameInfo_t *game, const int shapes[7][4][4]) {
   }
 }
 
-// Основная функция для создания новой фигуры
+/**
+ * @brief Основная функция для создания новой фигуры.
+ *
+ * @param piece Указатель на указатель структуры Piece, представляющей фигуру.
+ */
 void spawnNewPiece(Piece **piece) {
   static const int shapes[7][4][4] = {
       {{1, 1, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},  // Линия
@@ -63,6 +91,13 @@ void spawnNewPiece(Piece **piece) {
   updateNext(game, shapes);
 }
 
+/**
+ * @brief Проверяет, может ли фигура двигаться влево.
+ *
+ * @param piece Указатель на структуру Piece, представляющую фигуру.
+ * @param field Двумерный массив игрового поля.
+ * @return true, если движение влево возможно, иначе false.
+ */
 bool canMoveLeft(Piece *piece, int **field) {
   if (piece == NULL) {
     return false;
@@ -80,6 +115,13 @@ bool canMoveLeft(Piece *piece, int **field) {
   return true;
 }
 
+/**
+ * @brief Проверяет, может ли фигура двигаться вправо.
+ *
+ * @param piece Указатель на структуру Piece, представляющую фигуру.
+ * @param field Двумерный массив игрового поля.
+ * @return true, если движение вправо возможно, иначе false.
+ */
 bool canMoveRight(Piece *piece, int **field) {
   if (piece == NULL) {
     return false;
@@ -96,6 +138,13 @@ bool canMoveRight(Piece *piece, int **field) {
   return true;
 }
 
+/**
+ * @brief Проверяет, может ли фигура двигаться вниз.
+ *
+ * @param piece Указатель на структуру Piece, представляющую фигуру.
+ * @param field Двумерный массив игрового поля.
+ * @return true, если движение вниз возможно, иначе false.
+ */
 bool canMoveDown(Piece *piece, int **field) {
   if (piece == NULL) {
     return false;
@@ -112,6 +161,12 @@ bool canMoveDown(Piece *piece, int **field) {
   return true;
 }
 
+/**
+ * @brief Фиксирует фигуру на игровом поле.
+ *
+ * @param field Двумерный массив игрового поля.
+ * @param piece Указатель на структуру Piece, представляющую фигуру.
+ */
 void fixPiece(int **field, Piece *piece) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -125,11 +180,23 @@ void fixPiece(int **field, Piece *piece) {
   free(piece);
 }
 
+/**
+ * @brief Проверяет, является ли фигура квадратной.
+ *
+ * @param piece Указатель на структуру Piece, представляющую фигуру.
+ * @return true, если фигура квадратная, иначе false.
+ */
 bool isSquarePiece(Piece *piece) {
   return piece->shape[1][1] == 1 && piece->shape[0][0] == 1 &&
          piece->shape[0][1] == 1 && piece->shape[1][0] == 1;
 }
 
+/**
+ * @brief Вращает матрицу на 90 градусов по часовой стрелке.
+ *
+ * @param src Исходная матрица.
+ * @param dest Результирующая матрица.
+ */
 void rotateMatrix90(int src[4][4], int dest[4][4]) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -138,6 +205,16 @@ void rotateMatrix90(int src[4][4], int dest[4][4]) {
   }
 }
 
+/**
+ * @brief Проверяет, является ли вращение фигуры допустимым.
+ *
+ * @param piece Указатель на структуру Piece, представляющую фигуру.
+ * @param rotated Вращённая матрица фигуры.
+ * @param offsetX Смещение по оси X.
+ * @param offsetY Смещение по оси Y.
+ * @param field Двумерный массив игрового поля.
+ * @return true, если вращение допустимо, иначе false.
+ */
 bool isRotationValid(Piece *piece, int rotated[4][4], int offsetX, int offsetY,
                      int **field) {
   bool isValid = true;
@@ -157,6 +234,13 @@ bool isRotationValid(Piece *piece, int rotated[4][4], int offsetX, int offsetY,
   }
   return isValid;
 }
+
+/**
+ * @brief Вращает фигуру, если это возможно.
+ *
+ * @param piece Указатель на структуру Piece, представляющую фигуру.
+ * @param field Двумерный массив игрового поля.
+ */
 void rotatePiece(Piece *piece, int **field) {
   if (isSquarePiece(piece)) {
     return;  // Проверка аргументов
@@ -194,6 +278,15 @@ void rotatePiece(Piece *piece, int **field) {
     rotatePiece(piece, field);  // Рекурсия для повторной попытки
   }
 }
+
+/**
+ * @brief Применяет вращение к фигуре.
+ *
+ * @param piece Указатель на структуру Piece, представляющую фигуру.
+ * @param rotated Вращённая матрица фигуры.
+ * @param offsetX Смещение по оси X.
+ * @param offsetY Смещение по оси Y.
+ */
 void applyRotation(Piece *piece, int rotated[4][4], int offsetX, int offsetY) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -204,6 +297,14 @@ void applyRotation(Piece *piece, int rotated[4][4], int offsetX, int offsetY) {
   piece->y += offsetY;
 }
 
+/**
+ * @brief Фиксирует только часть фигуры на игровом поле. Используется когда
+ * падающая фигура может закрепиться к полю только нижней частью, то есть под
+ * ней свобона только одна строка.
+ *
+ * @param field Двумерный массив игрового поля.
+ * @param piece Указатель на структуру Piece, представляющую фигуру.
+ */
 void fixPartialPiece(int **field, Piece *piece) {
   bool hasBlock = false;
   for (int i = 3; i >= 0 && !hasBlock; i--) {

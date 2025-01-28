@@ -1,5 +1,13 @@
 #include "../../brick_game/tetris/game_logic.h"
 #include "cli_interface.h"
+/**
+ * @brief Главный игровой цикл.
+ *
+ * Функция запускает основной игровой цикл, обрабатывая пользовательский ввод и
+ * обновляя состояние игры. В зависимости от ввода (например, движение, вращение
+ * фигуры, пауза) вызываются соответствующие функции. Цикл продолжается, пока
+ * игра не будет завершена или поставлена на паузу.
+ */
 void game_loop() {
   GameInfo_t *game = getGameInfo();
   userInput(Start, false);  // Начинаем игру
@@ -38,7 +46,15 @@ void game_loop() {
     }
   }
 }
-
+/**
+ * @brief Основная функция программы.
+ *
+ * Функция инициализирует библиотеку ncurses, устанавливает локаль и отображает
+ * экран начала игры. Если игра начинается, запускается игровой цикл. Если
+ * пользователь решает выйти, программа завершает работу.
+ *
+ * @return Возвращает код завершения программы (успех или ошибка).
+ */
 int main(void) {
   WIN_INIT(50);
   setlocale(LC_ALL, "");
@@ -50,6 +66,16 @@ int main(void) {
   return SUCCESS;
 }
 
+/**
+ * @brief Обновляет состояние игры.
+ *
+ * Функция обновляет состояние игры, включая положение текущей фигуры, очищение
+ * линий и обновление счета. Если фигура не может быть перемещена вниз, она
+ * фиксируется, и начинается новая фигура. Также происходит проверка на
+ * окончание игры.
+ *
+ * @return Обновленное состояние игры.
+ */
 GameInfo_t updateCurrentState() {
   GameInfo_t *game = getGameInfo();
   Piece *currentPiece = getCurrentPiece();
@@ -57,11 +83,11 @@ GameInfo_t updateCurrentState() {
   if (lastTick == 0) lastTick = clock();
 
   if (game->pause) {
-    return *game;  // Игра на паузе
+    return *game;
   }
 
   if (!game->level) {
-    initializeGame(game);  // Инициализация игры
+    initializeGame(game);
   }
 
   if (!updatePiecePosition(currentPiece, game, &lastTick)) {

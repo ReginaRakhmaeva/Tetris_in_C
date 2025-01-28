@@ -1,6 +1,18 @@
+/**
+ * @file game_logic.c
+ * @brief Основная логика игры Тетрис, включая обработку уровней, очков и
+ * управления игровым полем.
+ */
+
 #include <stdlib.h>
 
 #include "../../gui/cli/cli_interface.h"
+
+/**
+ * @brief Загружает рекордный счёт из файла.
+ *
+ * @return Рекордный счёт (0, если файл недоступен).
+ */
 int loadHighScore() {
   FILE *file = fopen(HIGH_SCORE_FILE, "r");
   if (!file) {
@@ -12,6 +24,11 @@ int loadHighScore() {
   return highScore;
 }
 
+/**
+ * @brief Сохраняет рекордный счёт в файл.
+ *
+ * @param highScore Рекордный счёт для сохранения.
+ */
 void saveHighScore(int highScore) {
   FILE *file = fopen(HIGH_SCORE_FILE, "w");
   if (file) {
@@ -20,6 +37,11 @@ void saveHighScore(int highScore) {
   }
 }
 
+/**
+ * @brief Инициализирует начальные параметры игры.
+ *
+ * @param game Указатель на структуру GameInfo_t, представляющую состояние игры.
+ */
 void initializeGame(GameInfo_t *game) {
   game->level = 1;
   game->score = 0;
@@ -33,6 +55,16 @@ void initializeGame(GameInfo_t *game) {
   }
 }
 
+/**
+ * @brief Обновляет позицию текущей фигуры на игровом поле.
+ *
+ * @param currentPiece Указатель на текущую фигуру.
+ * @param game Указатель на структуру GameInfo_t.
+ * @param lastTick Указатель на время последнего обновления.
+ *
+ * @return true, если фигура может двигаться вниз; false, если фигура
+ * зафиксирована.
+ */
 bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
                          clock_t *lastTick) {
   bool canContinue = true;
@@ -50,6 +82,12 @@ bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
   return canContinue;
 }
 
+/**
+ * @brief Обновляет очки и уровень игрока после очистки линий.
+ *
+ * @param game Указатель на структуру GameInfo_t.
+ * @param linesCleared Количество очищенных линий.
+ */
 void updateScoreAndLevel(GameInfo_t *game, int linesCleared) {
   game->score += linesCleared * 100;
   if (game->score > game->high_score) {
@@ -60,6 +98,13 @@ void updateScoreAndLevel(GameInfo_t *game, int linesCleared) {
   game->speed = 1 + game->level;
 }
 
+/**
+ * @brief Очищает заполненные линии на игровом поле.
+ *
+ * @param field Двумерный массив, представляющий игровое поле.
+ *
+ * @return Количество очищенных линий.
+ */
 int clearFullLines(int **field) {
   int cleared = 0;
 
@@ -86,6 +131,14 @@ int clearFullLines(int **field) {
   return cleared;
 }
 
+/**
+ * @brief Проверяет, доступно ли место для полной фиксации фигуры на поле.
+ *
+ * @param field Двумерный массив, представляющий игровое поле.
+ * @param piece Указатель на фигуру.
+ *
+ * @return true, если место доступно; false, если место недоступно.
+ */
 bool isSpaceAvailableForFullFix(int **field, Piece *piece) {
   bool isAvailable = true;
 
@@ -96,10 +149,17 @@ bool isSpaceAvailableForFullFix(int **field, Piece *piece) {
         int newY = piece->y + i;
         if (newY < 0 || newY >= ROWS || newX < 0 || newX >= COLS ||
             field[newY][newX]) {
-          isAvailable = false;  // Место недоступно
+          isAvailable = false;
         }
       }
     }
   }
   return isAvailable;
 }
+
+/**
+ * @brief Обрабатывает ввод пользователя.
+ *
+ * @return Код ввода пользователя.
+ */
+int processUserInput() { return GET_USER_INPUT; }

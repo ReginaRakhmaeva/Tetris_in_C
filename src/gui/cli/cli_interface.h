@@ -21,7 +21,6 @@ void clearField();
 void showGameOverScreen(GameInfo_t *game);
 void initNcurses();
 void cleanupNcurses(GameInfo_t *game);
-int processUserInput();
 void cleanupNcursesstart();
 
 void game_loop();

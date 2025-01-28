@@ -68,4 +68,6 @@ void initializeGame(GameInfo_t *game);
 void initializeNext(GameInfo_t *game, const int shapes[7][4][4]);
 void createCurrentPiece(Piece **piece, GameInfo_t *game);
 void updateNext(GameInfo_t *game, const int shapes[7][4][4]);
+int processUserInput();
+
 #endif  // BACKEND_H

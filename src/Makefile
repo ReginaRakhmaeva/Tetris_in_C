@@ -26,6 +26,10 @@ TEST_OBJ = $(OBJ_DIR)/test.o
 TEST_SRC_FILES = $(wildcard $(BRICK_GAME_DIR)/*.c)
 TEST_OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(TEST_SRC_FILES))
 
+# Каталог установки
+PREFIX = /usr/local
+BINDIR = $(PREFIX)/bin
+
 # Основная цель
 all: clean $(EXE)
 
@@ -67,7 +71,6 @@ gcov_report: clean $(TEST_EXE)
 	genhtml $(REPORT_DIR)/coverage.info --output-directory $(REPORT_DIR)
 	@echo "HTML report generated in $(REPORT_DIR)"
 
-
 # Цель для valgrind (проверка на утечки памяти в brick_game/tetris)
 valgrind: clean $(LIB)
 	$(CC) $(CFLAGS) $(TEST_DIR)/*.c $(BRICK_GAME_DIR)/*.c -o $(TEST_EXE) $(LDFLAGS)
@@ -81,6 +84,27 @@ cppcheck:
 valgrindall: clean $(LIB)
 	$(CC) $(CFLAGS)  $(BRICK_GAME_DIR)/*.c $(GUI_CLI_DIR)/*.c  -o $(TEST_EXE) $(LDFLAGS)
 	valgrind -s --leak-check=full --track-origins=yes --show-reachable=yes ./$(TEST_EXE)
+
+# Установка
+install: $(EXE)
+	@mkdir -p $(BINDIR)
+	cp $(EXE) $(BINDIR)
+	@echo "Installed $(EXE) to $(BINDIR)"
+
+# Удаление
+uninstall:
+	rm -f $(BINDIR)/$(notdir $(EXE))
+	@echo "Uninstalled $(EXE) from $(BINDIR)"
+
+# Создание документации
+dvi:
+	@echo "Generating DVI documentation..."
+	texi2dvi -o documentation.dvi documentation.tex
+
+# Создание архива
+dist:
+	tar -czvf tetris.tar.gz $(SRC_DIR) $(TEST_DIR) Makefile
+	@echo "Source archive created: tetris.tar.gz"
 
 # Очистка
 clean:
