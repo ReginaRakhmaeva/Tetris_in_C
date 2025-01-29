@@ -113,3 +113,4 @@ clean:
 	rm -rf *.gcda *.gcno
 	rm -rf $(REPORT_DIR)
 	rm -rf ../*.gcda ../*.gcno
+	rm -rf tetris.tar.gz

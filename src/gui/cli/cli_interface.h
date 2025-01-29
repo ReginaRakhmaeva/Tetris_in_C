@@ -9,6 +9,9 @@
 #include "../../brick_game/tetris/game_logic.h"
 #define ROWS 20
 #define COLS 10
+#define GET_USER_INPUT getch()
+#define WIN_INIT(size) initNcurses()
+
 // Функции отображения
 void renderStartScreen();
 bool showStartScreen();
@@ -31,4 +34,5 @@ bool handleGameOverInput();
 GameInfo_t updateCurrentState();
 void handleGameOver(GameInfo_t *game, Piece *currentPiece);
 
+int processUserInput();
 #endif  // FRONTEND_H

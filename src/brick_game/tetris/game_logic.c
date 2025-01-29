@@ -4,9 +4,9 @@
  * управления игровым полем.
  */
 
-#include <stdlib.h>
+#include "game_logic.h"
 
-#include "../../gui/cli/cli_interface.h"
+#include <stdlib.h>
 
 /**
  * @brief Загружает рекордный счёт из файла.
@@ -156,10 +156,3 @@ bool isSpaceAvailableForFullFix(int **field, Piece *piece) {
   }
   return isAvailable;
 }
-
-/**
- * @brief Обрабатывает ввод пользователя.
- *
- * @return Код ввода пользователя.
- */
-int processUserInput() { return GET_USER_INPUT; }

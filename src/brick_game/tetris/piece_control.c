@@ -12,7 +12,6 @@
 #include <string.h>
 #include <time.h>
 
-#include "../../gui/cli/cli_interface.h"
 #include "game_logic.h"
 
 /**
@@ -99,20 +98,21 @@ void spawnNewPiece(Piece **piece) {
  * @return true, если движение влево возможно, иначе false.
  */
 bool canMoveLeft(Piece *piece, int **field) {
+  bool canMove = true;
+
   if (piece == NULL) {
-    return false;
+    canMove = false;
   }
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
+  for (int i = 0; i < 4 && canMove; i++) {
+    for (int j = 0; j < 4 && canMove; j++) {
       if (piece->shape[i][j]) {
-        if (piece->x + j - 1 < 0 || piece->y + i < 0 || piece->y + i >= ROWS ||
-            piece->x + j - 1 >= COLS || field[piece->y + i][piece->x + j - 1]) {
-          return false;
+        if (piece->x + j - 1 < 0 || field[piece->y + i][piece->x + j - 1]) {
+          canMove = false;
         }
       }
     }
   }
-  return true;
+  return canMove;
 }
 
 /**
@@ -123,19 +123,22 @@ bool canMoveLeft(Piece *piece, int **field) {
  * @return true, если движение вправо возможно, иначе false.
  */
 bool canMoveRight(Piece *piece, int **field) {
+  bool canMove = true;
+
   if (piece == NULL) {
-    return false;
+    canMove = false;
   }
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
+  for (int i = 0; i < 4 && canMove; i++) {
+    for (int j = 0; j < 4 && canMove; j++) {
       if (piece->shape[i][j]) {
         if (piece->x + j + 1 >= COLS || field[piece->y + i][piece->x + j + 1]) {
-          return false;
+          canMove = false;
         }
       }
     }
   }
-  return true;
+
+  return canMove;
 }
 
 /**
@@ -146,19 +149,21 @@ bool canMoveRight(Piece *piece, int **field) {
  * @return true, если движение вниз возможно, иначе false.
  */
 bool canMoveDown(Piece *piece, int **field) {
+  bool canMove = true;
+
   if (piece == NULL) {
-    return false;
+    canMove = false;
   }
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
+  for (int i = 0; i < 4 && canMove; i++) {
+    for (int j = 0; j < 4 && canMove; j++) {
       if (piece->shape[i][j]) {
         if (piece->y + i + 1 >= ROWS || field[piece->y + i + 1][piece->x + j]) {
-          return false;
+          canMove = false;
         }
       }
     }
   }
-  return true;
+  return canMove;
 }
 
 /**

@@ -1,16 +1,18 @@
 #ifndef BACKEND_H
 #define BACKEND_H
 
+#include <ncurses.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 #define HIGH_SCORE_FILE "highscore.txt"
-
+#define ROWS 20
+#define COLS 10
 // Константы
 #define SUCCESS 0
-#define WIN_INIT(size) initNcurses()
-#define GET_USER_INPUT getch()
 
 // Перечисления
 typedef enum {
@@ -68,6 +70,5 @@ void initializeGame(GameInfo_t *game);
 void initializeNext(GameInfo_t *game, const int shapes[7][4][4]);
 void createCurrentPiece(Piece **piece, GameInfo_t *game);
 void updateNext(GameInfo_t *game, const int shapes[7][4][4]);
-int processUserInput();
 
 #endif  // BACKEND_H
