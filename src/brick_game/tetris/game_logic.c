@@ -45,7 +45,7 @@ void initializeGame(GameInfo_t *game) {
   game->level = 1;
   game->score = 0;
   game->high_score = loadHighScore();
-  game->speed = 50 + game->level * 0.5;
+  game->speed = 20 + game->level * 0.5;
   game->pause = 0;
 
   game->field = (int **)malloc(sizeof(int *) * ROWS);
@@ -108,10 +108,8 @@ void updateScoreAndLevel(GameInfo_t *game, int linesCleared) {
     game->high_score = game->score;
     saveHighScore(game->high_score);
   }
-  if (game->level < 10 && game->score >= game->level * 600) {
-    game->level++;
-  }
-  game->speed = 1 + game->level;
+  if (game->level < 10) game->level = game->score / 600 + 1;
+  game->speed = game->level;
 }
 
 /**
