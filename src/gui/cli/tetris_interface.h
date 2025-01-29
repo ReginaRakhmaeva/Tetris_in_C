@@ -1,5 +1,5 @@
-#ifndef FRONTEND_H
-#define FRONTEND_H
+#ifndef TETRIS_INTERFACE_H
+#define TETRIS_INTERFACE_H
 #include <locale.h>
 #include <ncurses.h>
 #include <stdio.h>
@@ -7,30 +7,19 @@
 #include <time.h>
 
 #include "../../brick_game/tetris/game_logic.h"
+#include "main.h"
 #define ROWS 20
 #define COLS 10
-#define GET_USER_INPUT getch()
-#define WIN_INIT(size) initNcurses()
 
 // Функции отображения
 void renderStartScreen();
-bool showStartScreen();
 
 void drawField(GameInfo_t *game);
 void drawStaticField(int **field);
 void drawPiece(Piece *piece);
 void drawGameInfo(GameInfo_t *game);
 void clearField();
-void showGameOverScreen(GameInfo_t *game);
-void initNcurses();
-void cleanupNcurses(GameInfo_t *game);
-void cleanupNcursesstart();
-
-void game_loop();
-
-void userInput(UserAction_t action, bool hold);
-bool handleStartScreenInput();
-GameInfo_t updateCurrentState();
+void displayGameOverScreen(GameInfo_t *game);
 void handleGameOver(GameInfo_t *game, Piece *currentPiece);
 
 int processUserInput();

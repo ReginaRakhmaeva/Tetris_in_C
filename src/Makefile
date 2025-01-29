@@ -21,7 +21,7 @@ SRC_FILES = $(wildcard $(BRICK_GAME_DIR)/*.c) $(wildcard $(GUI_CLI_DIR)/*.c)
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 
 # Исходные файлы для тестов (только для brick_game/tetris)
-TEST_SRC = $(TEST_DIR)/test.c
+TEST_SRC = $(TEST_DIR)/tests.c  $(TEST_DIR)/tests.h
 TEST_OBJ = $(OBJ_DIR)/test.o
 TEST_SRC_FILES = $(wildcard $(BRICK_GAME_DIR)/*.c)
 TEST_OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(TEST_SRC_FILES))

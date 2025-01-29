@@ -1,5 +1,5 @@
 /**
- * @file draw.c
+ * @file tetris_interface.c
  * @brief Файл содержит функции для отображения игрового поля, интерфейса и
  * управления ncurses.
  *
@@ -8,24 +8,9 @@
  * Over". Он также обрабатывает ввод с клавиатуры для взаимодействия с
  * пользователем.
  */
-#include "../../brick_game/tetris/game_logic.h"
-#include "cli_interface.h"
+#include "tetris_interface.h"
 
-/**
- * @brief Инициализирует библиотеку ncurses для отображения игры в консоли.
- *
- * Функция настраивает ncurses для работы с терминалом: отключает буферизацию
- * ввода, скрывает курсор, устанавливает режим обработки клавиш и задает таймаут
- * для обновления экрана.
- */
-void initNcurses() {
-  initscr();
-  cbreak();
-  noecho();
-  keypad(stdscr, TRUE);
-  curs_set(0);
-  timeout(50);
-}
+#include "../../brick_game/tetris/game_logic.h"
 
 /**
  * @brief Обрабатывает конец игры и обновляет поле.
@@ -53,39 +38,6 @@ void handleGameOver(GameInfo_t *game, Piece *currentPiece) {
     game->pause = true;
     ungetch('q');
   }
-}
-
-/**
- * @brief Завершает работу с ncurses и очищает память, выделенную для поля и
- * фигур.
- *
- * Функция завершает работу с ncurses и освобождает память, выделенную для
- * игрового поля и фигур.
- *
- * @param game Указатель на структуру GameInfo_t, содержащую информацию о
- * текущей игре.
- */
-void cleanupNcurses(GameInfo_t *game) {
-  endwin();
-  for (int i = 0; i < ROWS; i++) {
-    free(game->field[i]);
-  }
-  free(game->field);
-
-  for (int i = 0; i < 4; i++) {
-    free(game->next[i]);
-  }
-  free(game->next);
-}
-
-/**
- * @brief Завершает работу с ncurses без очистки данных игры.
- *
- * Функция завершает работу с ncurses без освобождения памяти, связанной с
- * игровыми данными.
- */
-void cleanupNcursesstart() {
-  endwin();  // Завершение работы с ncurses
 }
 
 /**
@@ -191,19 +143,6 @@ void renderStartScreen() {
 }
 
 /**
- * @brief Показывает экран начала игры и обрабатывает ввод.
- *
- * Функция отображает экран начала игры и обрабатывает пользовательский ввод для
- * начала игры или выхода.
- *
- * @return Возвращает true, если игра должна начаться, иначе false.
- */
-bool showStartScreen() {
-  renderStartScreen();
-  return handleStartScreenInput();
-}
-
-/**
  * @brief Отрисовывает игровое поле, фигуру и информацию о текущем состоянии
  * игры.
  *
@@ -238,19 +177,4 @@ void displayGameOverScreen(GameInfo_t *game) {
   mvprintw(ROWS / 2 + 2, COLS / 2 - 7, "or q to Quit");
 
   refresh();
-}
-
-/**
- * @brief Показывает экран окончания игры и обрабатывает ввод.
- *
- * Функция отображает экран окончания игры и обрабатывает пользовательский ввод
- * для перезапуска игры или выхода.
- *
- * @param game Указатель на структуру GameInfo_t, содержащую информацию о
- * текущей игре.
- */
-void showGameOverScreen(GameInfo_t *game) {
-  displayGameOverScreen(game);
-  napms(1000);
-  cleanupNcurses(game);
 }

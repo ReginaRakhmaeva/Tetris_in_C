@@ -1,8 +1,4 @@
-#include <check.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "../brick_game/tetris/game_logic.h"
+#include "tests.h"
 
 // Функция для инициализации поля
 int **initializeField() {
