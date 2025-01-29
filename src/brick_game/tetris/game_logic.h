@@ -8,7 +8,7 @@
 #include <string.h>
 #include <time.h>
 
-#define HIGH_SCORE_FILE "highscore.txt"
+#define HIGH_SCORE_FILE "brick_game/tetris/highscore.txt"
 #define ROWS 20
 #define COLS 10
 // Константы

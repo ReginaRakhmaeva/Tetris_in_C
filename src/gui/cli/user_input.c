@@ -74,7 +74,7 @@ void userInput(UserAction_t action, bool hold) {
   GameInfo_t *game = getGameInfo();
   Piece *currentPiece = getCurrentPiece();
 
-  if (game->pause && action != Pause) {
+  if (game->pause && action != Pause && action != Terminate) {
     return;
   }
 
@@ -135,23 +135,6 @@ bool handleStartScreenInput() {
       return false;          // Выйти из игры
     }
   }
-}
-
-/**
- * @brief Обрабатывает ввод пользователя на экране окончания игры.
- *
- * Функция ожидает ввод пользователя на экране окончания игры. Если пользователь
- * нажимает клавишу 'q', игра завершается.
- *
- * @return Возвращает true, если игра должна продолжиться, иначе false.
- */
-bool handleGameOverInput() {
-  int ch = processUserInput();
-  int fl = true;
-  if (ch == 'q') {
-    fl = false;
-  }
-  return fl;
 }
 
 /**

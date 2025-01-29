@@ -30,7 +30,6 @@ void game_loop();
 
 void userInput(UserAction_t action, bool hold);
 bool handleStartScreenInput();
-bool handleGameOverInput();
 GameInfo_t updateCurrentState();
 void handleGameOver(GameInfo_t *game, Piece *currentPiece);
 

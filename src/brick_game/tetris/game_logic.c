@@ -15,12 +15,11 @@
  */
 int loadHighScore() {
   FILE *file = fopen(HIGH_SCORE_FILE, "r");
-  if (!file) {
-    return 0;
-  }
   int highScore = 0;
-  fscanf(file, "%d", &highScore);
-  fclose(file);
+  if (file) {
+    fscanf(file, "%d", &highScore);
+    fclose(file);
+  }
   return highScore;
 }
 
@@ -46,7 +45,7 @@ void initializeGame(GameInfo_t *game) {
   game->level = 1;
   game->score = 0;
   game->high_score = loadHighScore();
-  game->speed = 20 + game->level * 0.5;
+  game->speed = 50 + game->level * 0.5;
   game->pause = 0;
 
   game->field = (int **)malloc(sizeof(int *) * ROWS);
@@ -70,7 +69,7 @@ bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
   bool canContinue = true;
   double elapsed = (double)(clock() - *lastTick) / CLOCKS_PER_SEC;
 
-  if (elapsed >= 0.05 / game->speed) {
+  if (elapsed >= 0.04 / game->speed) {
     *lastTick = clock();
     if (canMoveDown(currentPiece, game->field)) {
       currentPiece->y++;
@@ -89,12 +88,29 @@ bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
  * @param linesCleared Количество очищенных линий.
  */
 void updateScoreAndLevel(GameInfo_t *game, int linesCleared) {
-  game->score += linesCleared * 100;
+  switch (linesCleared) {
+    case 1:
+      game->score += 100;
+      break;
+    case 2:
+      game->score += 300;
+      break;
+    case 3:
+      game->score += 700;
+      break;
+    case 4:
+      game->score += 1500;
+      break;
+    default:
+      break;
+  }
   if (game->score > game->high_score) {
     game->high_score = game->score;
     saveHighScore(game->high_score);
   }
-  if (game->level < 10) game->level = game->score / 600 + 1;
+  if (game->level < 10 && game->score >= game->level * 600) {
+    game->level++;
+  }
   game->speed = 1 + game->level;
 }
 

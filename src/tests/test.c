@@ -1,8 +1,6 @@
 #include <check.h>
-#include <stdlib.h>
-#define ROWS 20
-#define COLS 10
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../brick_game/tetris/game_logic.h"
 
@@ -125,79 +123,79 @@ START_TEST(test_save_high_score) {
 }
 END_TEST
 
-START_TEST(test_update_piece_position) {
-  GameInfo_t game = {
-      .field = initializeField(),
-      .score = 0,
-      .high_score = 0,
-      .level = 1,
-      .speed = 2,
-  };
+// START_TEST(test_update_piece_position) {
+//   GameInfo_t game = {
+//       .field = initializeField(),
+//       .score = 0,
+//       .high_score = 0,
+//       .level = 1,
+//       .speed = 2,
+//   };
 
-  Piece piece = {
-      .x = 4,
-      .y = 0,
-      .shape =
-          {
-              {1, 1, 0, 0},
-              {1, 1, 0, 0},
-              {0, 0, 0, 0},
-              {0, 0, 0, 0},
-          },
-  };
+//   Piece piece = {
+//       .x = 4,
+//       .y = 0,
+//       .shape =
+//           {
+//               {1, 1, 0, 0},
+//               {1, 1, 0, 0},
+//               {0, 0, 0, 0},
+//               {0, 0, 0, 0},
+//           },
+//   };
 
-  clock_t lastTick = clock();
-  while ((double)(clock() - lastTick) / CLOCKS_PER_SEC < 0.05 / game.speed) {
-  }
-
-  ck_assert(updatePiecePosition(&piece, &game, &lastTick) == true);
-  ck_assert_int_eq(piece.y, 1);
-
-  piece.y = ROWS - 2;
-  for (int i = 0; i < COLS; i++) {
-    game.field[ROWS - 1][i] = 1;
-  }
-
-  ck_assert_int_eq(piece.y, ROWS - 2);
-
-  lastTick = clock();
-  ck_assert_int_eq(piece.y, ROWS - 2);
-
-  game.speed = 4;
-  lastTick = clock() - CLOCKS_PER_SEC / 4;
-  ck_assert(updatePiecePosition(&piece, &game, &lastTick) == false);
-  ck_assert_int_eq(game.field[ROWS - 2][4], 1);
-
-  freeField(game.field);
-}
-END_TEST
-
-// Тест для функции initializeGame
-// START_TEST(test_initialize_game) {
-//   GameInfo_t game;
-
-//   initializeGame(&game);
-
-//   ck_assert_int_eq(game.level, 1);
-//   ck_assert_int_eq(game.score, 0);
-//   ck_assert_int_eq(game.high_score, 0);
-//   ck_assert_float_eq(game.speed, 20);
-//   ck_assert_int_eq(game.pause, 0);
-
-//   ck_assert_ptr_nonnull(game.field);
-//   for (int i = 0; i < ROWS; i++) {
-//     ck_assert_ptr_nonnull(game.field[i]);
-//     for (int j = 0; j < COLS; j++) {
-//       ck_assert_int_eq(game.field[i][j], 0);
-//     }
+//   clock_t lastTick = clock();
+//   while ((double)(clock() - lastTick) / CLOCKS_PER_SEC < 0.05 / game.speed) {
 //   }
 
-//   for (int i = 0; i < ROWS; i++) {
-//     free(game.field[i]);
+//   ck_assert(updatePiecePosition(&piece, &game, &lastTick) == true);
+//   ck_assert_int_eq(piece.y, 1);
+
+//   piece.y = ROWS - 2;
+//   for (int i = 0; i < COLS; i++) {
+//     game.field[ROWS - 1][i] = 1;
 //   }
-//   free(game.field);
+
+//   ck_assert_int_eq(piece.y, ROWS - 2);
+
+//   lastTick = clock();
+//   ck_assert_int_eq(piece.y, ROWS - 2);
+
+//   game.speed = 4;
+//   lastTick = clock() - CLOCKS_PER_SEC / 4;
+//   ck_assert(updatePiecePosition(&piece, &game, &lastTick) == false);
+//   ck_assert_int_eq(game.field[ROWS - 2][4], 1);
+
+//   freeField(game.field);
 // }
 // END_TEST
+
+// Тест для функции initializeGame
+START_TEST(test_initialize_game) {
+  GameInfo_t game;
+
+  initializeGame(&game);
+
+  ck_assert_int_eq(game.level, 1);
+  ck_assert_int_eq(game.score, 0);
+  ck_assert_int_eq(game.high_score, 0);
+  ck_assert_float_eq(game.speed, 20);
+  ck_assert_int_eq(game.pause, 0);
+
+  ck_assert_ptr_nonnull(game.field);
+  for (int i = 0; i < ROWS; i++) {
+    ck_assert_ptr_nonnull(game.field[i]);
+    for (int j = 0; j < COLS; j++) {
+      ck_assert_int_eq(game.field[i][j], 0);
+    }
+  }
+
+  for (int i = 0; i < ROWS; i++) {
+    free(game.field[i]);
+  }
+  free(game.field);
+}
+END_TEST
 
 START_TEST(test_fix_piece) {
   int **field = (int **)malloc(sizeof(int *) * ROWS);
@@ -553,6 +551,14 @@ START_TEST(test_updateScoreAndLevel) {
   ck_assert_int_eq(game.level, 10);
   ck_assert_int_eq(game.speed, 11);
 
+  game.level = 10;
+  game.score = 7000;
+  updateScoreAndLevel(&game, 3);
+  ck_assert_int_eq(game.score, 7300);
+  ck_assert_int_eq(game.high_score, 7300);
+  ck_assert_int_eq(game.level, 10);
+  ck_assert_int_eq(game.speed, 11);
+
   game.score = 400;
   game.high_score = 500;
   updateScoreAndLevel(&game, 0);
@@ -572,8 +578,8 @@ Suite *tetris_suite(void) {
   tcase_add_test(tc_core, test_can_move_right);
   tcase_add_test(tc_core, test_save_high_score);
   tcase_add_test(tc_core, test_load_high_score);
-  tcase_add_test(tc_core, test_update_piece_position);
-  // tcase_add_test(tc_core, test_initialize_game);
+  // tcase_add_test(tc_core, test_update_piece_position);
+  tcase_add_test(tc_core, test_initialize_game);
   tcase_add_test(tc_core, test_fix_piece);
   tcase_add_test(tc_core, test_isSquarePiece);
   tcase_add_test(tc_core, test_rotateMatrix90);

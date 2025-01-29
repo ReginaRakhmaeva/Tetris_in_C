@@ -251,11 +251,6 @@ void displayGameOverScreen(GameInfo_t *game) {
  */
 void showGameOverScreen(GameInfo_t *game) {
   displayGameOverScreen(game);
-
-  bool continueGame = true;
-  while (continueGame) {
-    continueGame = handleGameOverInput();
-  }
-
+  napms(1000);
   cleanupNcurses(game);
 }

@@ -108,7 +108,7 @@ dist:
 
 # Очистка
 clean:
-	rm -rf $(OBJ_DIR)/*
+	rm -rf $(OBJ_DIR)
 	rm -f $(EXE) $(LIB) $(TEST_EXE)
 	rm -rf *.gcda *.gcno
 	rm -rf $(REPORT_DIR)
