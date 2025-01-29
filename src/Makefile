@@ -39,7 +39,7 @@ $(EXE): $(OBJ_FILES)
 
 # Правило для объектных файлов
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)/$(dir $<)  # Создаём папки для объектных файлов в build
+	@mkdir -p $(OBJ_DIR)/$(dir $<) 
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # Создание библиотеки
@@ -80,10 +80,11 @@ valgrind: clean $(LIB)
 cppcheck:
 	cppcheck --enable=all --std=c11 --language=c  $(BRICK_GAME_DIR)/*.c $(GUI_CLI_DIR)/*.c 
 
-# Цель для valgrind (проверка на утечки памяти для всего проекта)
-valgrindall: clean $(LIB)
-	$(CC) $(CFLAGS)  $(BRICK_GAME_DIR)/*.c $(GUI_CLI_DIR)/*.c  -o $(TEST_EXE) $(LDFLAGS)
-	valgrind -s --leak-check=full --track-origins=yes --show-reachable=yes ./$(TEST_EXE)
+# Цель для clang-format
+format_check:
+	cp ../materials/linters/.clang-format ../src/.clang-format
+	clang-format -n tests/*.c tests/*.h brick_game/tetris/*.c brick_game/tetris/*.h gui/cli/*.c gui/cli/*.h
+	rm -f .clang-format
 
 # Установка
 install: $(EXE)
@@ -99,12 +100,14 @@ uninstall:
 # Создание документации
 dvi:
 	@echo "Generating DVI documentation..."
-	texi2dvi -o documentation.dvi documentation.tex
+	doxygen
 
 # Создание архива
 dist:
-	tar -czvf tetris.tar.gz $(SRC_DIR) $(TEST_DIR) Makefile
-	@echo "Source archive created: tetris.tar.gz"
+	mkdir -p dist
+	tar -czvf dist/tetris.tar.gz $(SRC_DIR) $(TEST_DIR) Makefile
+	@echo "Source archive created: dist/tetris.tar.gz"
+
 
 # Очистка
 clean:
@@ -113,4 +116,4 @@ clean:
 	rm -rf *.gcda *.gcno
 	rm -rf $(REPORT_DIR)
 	rm -rf ../*.gcda ../*.gcno
-	rm -rf tetris.tar.gz
+	rm -rf dist
