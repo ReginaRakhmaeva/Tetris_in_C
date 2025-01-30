@@ -1,94 +1,11 @@
-/**
- * @file piece_control.c
- * @brief Управление фигурами в игре Тетрис.
- *
- * Этот файл содержит функции для создания, управления, проверки и вращения
- * фигур в игровом поле Тетрис. Он включает логику генерации новых фигур,
- * проверки их движения и размещения на игровом поле.
- */
+
+
+#include "piece_move.h"
 
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#include "game_logic.h"
-
-/**
- * @brief Инициализирует следующую фигуру (`next`), если она не задана.
- *
- * @param game Указатель на структуру GameInfo_t, содержащую игровую информацию.
- * @param shapes Массив фигур, представленных в виде матриц.
- */
-void initializeNext(GameInfo_t *game, const int shapes[7][4][4]) {
-  if (!game->next) {
-    game->next = (int **)malloc(sizeof(int *) * 4);
-    for (int i = 0; i < 4; i++) {
-      game->next[i] = (int *)calloc(4, sizeof(int));
-    }
-    int shapeIndex = rand() % 7;
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        game->next[i][j] = shapes[shapeIndex][i][j];
-      }
-    }
-  }
-}
-
-/**
- * @brief Создаёт текущую фигуру из следующей (`next`).
- *
- * @param piece Указатель на указатель структуры Piece, представляющей фигуру.
- * @param game Указатель на структуру GameInfo_t, содержащую игровую информацию.
- */
-void createCurrentPiece(Piece **piece, GameInfo_t *game) {
-  *piece = (Piece *)malloc(sizeof(Piece));
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      (*piece)->shape[i][j] = game->next[i][j];
-    }
-  }
-  (*piece)->x = COLS / 2 - 2;
-  (*piece)->y = 0;
-}
-
-/**
- * @brief Обновляет следующую фигуру (`next`) новой случайной фигурой.
- *
- * @param game Указатель на структуру GameInfo_t, содержащую игровую информацию.
- * @param shapes Массив фигур, представленных в виде матриц.
- */
-void updateNext(GameInfo_t *game, const int shapes[7][4][4]) {
-  int shapeIndex = rand() % 7;
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      game->next[i][j] = shapes[shapeIndex][i][j];
-    }
-  }
-}
-
-/**
- * @brief Основная функция для создания новой фигуры.
- *
- * @param piece Указатель на указатель структуры Piece, представляющей фигуру.
- */
-void spawnNewPiece(Piece **piece) {
-  static const int shapes[7][4][4] = {
-      {{1, 1, 1, 1}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},  // Линия
-      {{1, 1}, {1, 1}, {0, 0}, {0, 0}},              // Квадрат
-      {{1, 1, 0}, {0, 1, 1}, {0, 0, 0}, {0, 0, 0}},  // Z-образная
-      {{0, 1, 1}, {1, 1, 0}, {0, 0, 0}, {0, 0, 0}},  // Обратная Z
-      {{0, 1, 0}, {1, 1, 1}, {0, 0, 0}, {0, 0, 0}},  // T-образная
-      {{1, 0, 0}, {1, 1, 1}, {0, 0, 0}, {0, 0, 0}},  // L-образная
-      {{0, 0, 1}, {1, 1, 1}, {0, 0, 0}, {0, 0, 0}}   // Обратная L
-  };
-
-  GameInfo_t *game = getGameInfo();
-
-  initializeNext(game, shapes);
-  createCurrentPiece(piece, game);
-  updateNext(game, shapes);
-}
 
 /**
  * @brief Проверяет, может ли фигура двигаться влево.
@@ -164,25 +81,6 @@ bool canMoveDown(Piece *piece, int **field) {
     }
   }
   return canMove;
-}
-
-/**
- * @brief Фиксирует фигуру на игровом поле.
- *
- * @param field Двумерный массив игрового поля.
- * @param piece Указатель на структуру Piece, представляющую фигуру.
- */
-void fixPiece(int **field, Piece *piece) {
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      if (piece->shape[i][j]) {
-        int newX = piece->x + j;
-        int newY = piece->y + i;
-        field[newY][newX] = 1;
-      }
-    }
-  }
-  free(piece);
 }
 
 /**
@@ -300,28 +198,4 @@ void applyRotation(Piece *piece, int rotated[4][4], int offsetX, int offsetY) {
   }
   piece->x += offsetX;
   piece->y += offsetY;
-}
-
-/**
- * @brief Фиксирует только часть фигуры на игровом поле. Используется когда
- * падающая фигура может закрепиться к полю только нижней частью, то есть под
- * ней свобона только одна строка.
- *
- * @param field Двумерный массив игрового поля.
- * @param piece Указатель на структуру Piece, представляющую фигуру.
- */
-void fixPartialPiece(int **field, Piece *piece) {
-  bool hasBlock = false;
-  for (int i = 3; i >= 0 && !hasBlock; i--) {
-    for (int j = 0; j < 4; j++) {
-      if (piece->shape[i][j]) {
-        hasBlock = true;
-        int newX = piece->x + j;
-        if (newX >= 0 && newX < COLS) {
-          field[0][newX] = 1;
-        }
-      }
-    }
-  }
-  free(piece);
 }

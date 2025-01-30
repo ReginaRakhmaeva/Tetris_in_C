@@ -115,3 +115,10 @@ void userInput(UserAction_t action, bool hold) {
  * @return Код ввода пользователя.
  */
 int processUserInput() { return GET_USER_INPUT; }
+
+// Реализация функций управления состояниями
+
+int **getFieldMatrix() {
+  GameInfo_t *game = getGameInfo();
+  return game->field;  // Возвращаем матрицу игрового поля
+}

@@ -1,9 +1,3 @@
-/**
- * @file game_logic.c
- * @brief Основная логика игры Тетрис, включая обработку уровней, очков и
- * управления игровым полем.
- */
-
 #include "game_logic.h"
 
 #include <stdlib.h>
@@ -82,12 +76,12 @@ bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
 }
 
 /**
- * @brief Обновляет очки и уровень игрока после очистки линий.
+ * @brief Обновляет очки игрока после очистки линий.
  *
  * @param game Указатель на структуру GameInfo_t.
  * @param linesCleared Количество очищенных линий.
  */
-void updateScoreAndLevel(GameInfo_t *game, int linesCleared) {
+void updateScore(GameInfo_t *game, int linesCleared) {
   switch (linesCleared) {
     case 1:
       game->score += 100;
@@ -104,12 +98,23 @@ void updateScoreAndLevel(GameInfo_t *game, int linesCleared) {
     default:
       break;
   }
+
   if (game->score > game->high_score) {
     game->high_score = game->score;
     saveHighScore(game->high_score);
   }
-  if (game->level < 10) game->level = game->score / 600 + 1;
-  game->speed = game->level;
+}
+
+/**
+ * @brief Обновляет уровень и скорость игрока на основе его очков.
+ *
+ * @param game Указатель на структуру GameInfo_t.
+ */
+void updateLevelAndSpeed(GameInfo_t *game) {
+  if (game->level < 10) {
+    game->level = game->score / 600 + 1;
+  }
+  game->speed = game->level + 1;
 }
 
 /**
@@ -143,30 +148,4 @@ int clearFullLines(int **field) {
     }
   }
   return cleared;
-}
-
-/**
- * @brief Проверяет, доступно ли место для полной фиксации фигуры на поле.
- *
- * @param field Двумерный массив, представляющий игровое поле.
- * @param piece Указатель на фигуру.
- *
- * @return true, если место доступно; false, если место недоступно.
- */
-bool isSpaceAvailableForFullFix(int **field, Piece *piece) {
-  bool isAvailable = true;
-
-  for (int i = 0; i < 4 && isAvailable; i++) {
-    for (int j = 0; j < 4 && isAvailable; j++) {
-      if (piece->shape[i][j]) {
-        int newX = piece->x + j;
-        int newY = piece->y + i;
-        if (newY < 0 || newY >= ROWS || newX < 0 || newX >= COLS ||
-            field[newY][newX]) {
-          isAvailable = false;
-        }
-      }
-    }
-  }
-  return isAvailable;
 }

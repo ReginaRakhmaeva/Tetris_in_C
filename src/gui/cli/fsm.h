@@ -12,7 +12,7 @@
 #define GET_USER_INPUT getch()
 
 void game_loop();
-
 void userInput(UserAction_t action, bool hold);
 int processUserInput();
+int **getFieldMatrix();
 #endif  // FSM_H

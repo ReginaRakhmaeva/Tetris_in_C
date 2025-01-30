@@ -1,5 +1,5 @@
-#ifndef BACKEND_H
-#define BACKEND_H
+#ifndef GAME_LOGIC_H
+#define GAME_LOGIC_H
 
 #include <ncurses.h>
 #include <stdbool.h>
@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+#include "game_info.h"
 
 #define HIGH_SCORE_FILE "brick_game/tetris/highscore.txt"
 #define ROWS 20
@@ -26,49 +28,15 @@ typedef enum {
   Action
 } UserAction_t;
 
-// Структуры
-typedef struct {
-  int **field;
-  int **next;
-  int score;
-  int high_score;
-  int level;
-  int speed;
-  int pause;
-} GameInfo_t;
-
-typedef struct {
-  int x;
-  int y;
-  int shape[4][4];
-} Piece;
-
-// Функции
-GameInfo_t *getGameInfo();
-Piece *getCurrentPiece();
-//  Функции обработки логики игры
-void spawnNewPiece(Piece **piece);
-bool canMoveDown(Piece *piece, int **field);
-bool canMoveLeft(Piece *piece, int **field);
-bool canMoveRight(Piece *piece, int **field);
-bool isSpaceAvailableForFullFix(int **field, Piece *piece);
-void fixPiece(int **field, Piece *piece);
-void fixPartialPiece(int **field, Piece *piece);
-int clearFullLines(int **field);
-bool handleStartScreenInput();
-
-void rotateMatrix90(int src[4][4], int dest[4][4]);
-bool isRotationValid(Piece *piece, int rotated[4][4], int offsetX, int offsetY,
-                     int **field);
-void applyRotation(Piece *piece, int rotated[4][4], int offsetX, int offsetY);
-void rotatePiece(Piece *piece, int **field);
-bool isSquarePiece(Piece *piece);
-void updateScoreAndLevel(GameInfo_t *game, int linesCleared);
+int loadHighScore();
+void saveHighScore(int highScore);
 bool updatePiecePosition(Piece *currentPiece, GameInfo_t *game,
                          clock_t *lastTick);
 void initializeGame(GameInfo_t *game);
-void initializeNext(GameInfo_t *game, const int shapes[7][4][4]);
-void createCurrentPiece(Piece **piece, GameInfo_t *game);
-void updateNext(GameInfo_t *game, const int shapes[7][4][4]);
-
-#endif  // BACKEND_H
+void updateScore(GameInfo_t *game, int linesCleared);
+void updateLevelAndSpeed(GameInfo_t *game);
+int clearFullLines(int **field);
+#include "piece_create.h"
+#include "piece_fix.h"
+#include "piece_move.h"
+#endif  // GAME_LOGIC_H

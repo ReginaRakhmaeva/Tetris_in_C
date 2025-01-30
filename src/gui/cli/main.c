@@ -145,7 +145,8 @@ GameInfo_t updateCurrentState() {
     }
 
     int linesCleared = clearFullLines(game->field);
-    updateScoreAndLevel(game, linesCleared);
+    updateScore(game, linesCleared);
+    updateLevelAndSpeed(game);
   }
 
   return *game;

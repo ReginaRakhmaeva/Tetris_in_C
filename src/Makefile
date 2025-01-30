@@ -50,7 +50,7 @@ $(LIB): $(OBJ_FILES)
 	ranlib $@
 
 # Цель для тестов
-test: clean $(TEST_EXE)
+test: all $(TEST_EXE)
 	./$(TEST_EXE)
 
 # Сборка исполняемого файла для тестов (только для brick_game/tetris)
@@ -99,7 +99,7 @@ uninstall:
 
 # Создание документации
 dvi:
-	@echo "Generating DVI documentation..."
+	@echo "Generating doxygen documentation..."
 	doxygen
 
 # Создание архива
