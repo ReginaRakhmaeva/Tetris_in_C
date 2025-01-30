@@ -262,11 +262,6 @@ END_TEST
 
 START_TEST(test_isRotationValid) {
   int **field = initializeField();
-  // int field[ROWS][COLS] = {0};
-  // int *fieldPtrs[ROWS];
-  // for (int i = 0; i < ROWS; i++) {
-  //   fieldPtrs[i] = field[i];
-  // }
   Piece *piece = malloc(sizeof(Piece));
   *piece =
       (Piece){5, 5, {{1, 1, 0, 0}, {1, 1, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
@@ -484,7 +479,6 @@ START_TEST(test_isSpaceAvailableForFullFix) {
 END_TEST
 
 START_TEST(test_clearFullLines) {
-  // Инициализация поля
   int **field = initializeField();
 
   for (int j = 0; j < COLS; j++) {

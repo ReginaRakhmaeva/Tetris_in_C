@@ -1,3 +1,8 @@
+/**
+ * @file objects.h
+ * @brief Определение структур данных, используемых в игре Тетрис.
+ */
+
 #ifndef OBJECTS_H
 #define OBJECTS_H
 
@@ -5,21 +10,28 @@
 
 #include "defines.h"
 
-// Структуры
+/**
+ * @struct GameInfo_t
+ * @brief Структура, содержащая информацию о состоянии игры.
+ */
 typedef struct {
-  int **field;
-  int **next;
-  int score;
-  int high_score;
-  int level;
-  int speed;
-  int pause;
+  int **field; /**< Двумерный массив, представляющий игровое поле */
+  int **next;  /**< Следующая фигура */
+  int score;   /**< Текущий счет */
+  int high_score; /**< Рекордный счет */
+  int level;      /**< Текущий уровень */
+  int speed;      /**< Скорость падения фигур */
+  int pause;      /**< Флаг паузы */
 } GameInfo_t;
 
+/**
+ * @struct Piece
+ * @brief Структура, представляющая фигуру Тетриса.
+ */
 typedef struct {
-  int x;
-  int y;
-  int shape[4][4];
+  int x; /**< Координата X фигуры на поле */
+  int y; /**< Координата Y фигуры на поле */
+  int shape[4][4]; /**< Матрица 4x4, представляющая форму фигуры */
 } Piece;
 
-#endif
+#endif  // OBJECTS_H

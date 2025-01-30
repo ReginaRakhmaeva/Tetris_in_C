@@ -73,12 +73,12 @@ gcov_report: clean $(TEST_EXE)
 
 # Цель для valgrind (проверка на утечки памяти в brick_game/tetris)
 valgrind: clean $(LIB)
-	$(CC) $(CFLAGS) $(TEST_DIR)/*.c $(BRICK_GAME_DIR)/*.c -o $(TEST_EXE) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(TEST_DIR)/*.c $(BRICK_GAME_DIR)/src/*.c -o $(TEST_EXE) $(LDFLAGS)
 	valgrind -s --leak-check=full --track-origins=yes --show-reachable=yes ./$(TEST_EXE)
 
 # Цель для cppcheck (проверка исходников всего проекта)
 cppcheck:
-	cppcheck --enable=all --std=c11 --language=c  $(BRICK_GAME_DIR)/*.c $(GUI_CLI_DIR)/*.c 
+	cppcheck --enable=all --std=c11 --language=c  $(BRICK_GAME_DIR)/src/*.c $(GUI_CLI_DIR)/src/*.c 
 
 # Цель для clang-format
 format_check:
@@ -117,3 +117,4 @@ clean:
 	rm -rf $(REPORT_DIR)
 	rm -rf ../*.gcda ../*.gcno
 	rm -rf dist
+	rm -rf doxygen
