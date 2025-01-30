@@ -8,9 +8,9 @@
  * Over". Он также обрабатывает ввод с клавиатуры для взаимодействия с
  * пользователем.
  */
-#include "tetris_interface.h"
+#include "../header/tetris_interface.h"
 
-#include "../../brick_game/tetris/game_logic.h"
+#include "../../../brick_game/tetris/header/game_logic.h"
 
 /**
  * @brief Обрабатывает конец игры и обновляет поле.

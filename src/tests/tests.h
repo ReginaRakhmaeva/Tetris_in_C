@@ -5,6 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../brick_game/tetris/game_logic.h"
+#include "../brick_game/tetris/header/game_logic.h"
 
 #endif

@@ -1,4 +1,4 @@
-#include "game_info.h"
+#include "../header/game_info.h"
 
 /**
  * @brief Возвращает указатель на информацию о текущей игре.

@@ -1,6 +1,5 @@
-#include "fsm.h"
+#include "../header/fsm.h"
 
-#include "../../brick_game/tetris/game_logic.h"
 /**
  * @brief Главный игровой цикл.
  *

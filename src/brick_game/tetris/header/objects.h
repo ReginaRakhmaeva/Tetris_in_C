@@ -1,6 +1,9 @@
-#ifndef GAME_INFO_H
-#define GAME_INFO_H
-#include <stdio.h>
+#ifndef OBJECTS_H
+#define OBJECTS_H
+
+#include <ncurses.h>
+
+#include "defines.h"
 
 // Структуры
 typedef struct {
@@ -19,9 +22,4 @@ typedef struct {
   int shape[4][4];
 } Piece;
 
-GameInfo_t *getGameInfo();
-
-Piece *getCurrentPiece();
-#include "piece_create.h"
-
-#endif  // GAME_INFO_H
+#endif

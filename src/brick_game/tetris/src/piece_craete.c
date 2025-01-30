@@ -1,10 +1,4 @@
-
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-#include "piece_create.h"
+#include "../header/piece_create.h"
 
 /**
  * @brief Инициализирует следующую фигуру (`next`), если она не задана.

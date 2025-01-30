@@ -5,10 +5,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../../brick_game/tetris/game_logic.h"
+#include "../../../brick_game/tetris/header/game_logic.h"
 #include "fsm.h"
 #include "tetris_interface.h"
-#define WIN_INIT(size) initNcurses()
 
 GameInfo_t updateCurrentState();
 void initNcurses();

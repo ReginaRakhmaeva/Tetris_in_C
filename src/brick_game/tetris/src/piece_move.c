@@ -1,11 +1,4 @@
-
-
-#include "piece_move.h"
-
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+#include "../header/piece_move.h"
 
 /**
  * @brief Проверяет, может ли фигура двигаться влево.

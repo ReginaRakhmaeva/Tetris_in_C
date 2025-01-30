@@ -17,13 +17,13 @@ LIB = ../libtetris.a
 TEST_EXE = ../tetris_test
 
 # Исходные и объектные файлы для основной программы
-SRC_FILES = $(wildcard $(BRICK_GAME_DIR)/*.c) $(wildcard $(GUI_CLI_DIR)/*.c)
+SRC_FILES = $(wildcard $(BRICK_GAME_DIR)/src/*.c) $(wildcard $(GUI_CLI_DIR)/src/*.c)
 OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SRC_FILES))
 
 # Исходные файлы для тестов (только для brick_game/tetris)
 TEST_SRC = $(TEST_DIR)/tests.c  $(TEST_DIR)/tests.h
 TEST_OBJ = $(OBJ_DIR)/test.o
-TEST_SRC_FILES = $(wildcard $(BRICK_GAME_DIR)/*.c)
+TEST_SRC_FILES = $(wildcard $(BRICK_GAME_DIR)/src/*.c)
 TEST_OBJ_FILES = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(TEST_SRC_FILES))
 
 # Каталог установки
@@ -83,7 +83,7 @@ cppcheck:
 # Цель для clang-format
 format_check:
 	cp ../materials/linters/.clang-format ../src/.clang-format
-	clang-format -n tests/*.c tests/*.h brick_game/tetris/*.c brick_game/tetris/*.h gui/cli/*.c gui/cli/*.h
+	clang-format -n tests/*.c tests/*.h brick_game/tetris/src/*.c brick_game/tetris/header/*.h gui/cli/src/*.c gui/cli/header/*.h
 	rm -f .clang-format
 
 # Установка

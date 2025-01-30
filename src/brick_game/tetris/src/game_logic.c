@@ -1,6 +1,4 @@
-#include "game_logic.h"
-
-#include <stdlib.h>
+#include "../header/game_logic.h"
 
 /**
  * @brief Загружает рекордный счёт из файла.

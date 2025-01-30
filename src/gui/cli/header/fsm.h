@@ -6,10 +6,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "../../brick_game/tetris/game_logic.h"
+#include "../../../brick_game/tetris/header/game_logic.h"
 #include "main.h"
-#include "tetris_interface.h"
-#define GET_USER_INPUT getch()
 
 void game_loop();
 void userInput(UserAction_t action, bool hold);

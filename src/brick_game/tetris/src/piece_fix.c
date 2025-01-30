@@ -1,11 +1,6 @@
 
 
-#include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
-#include "game_logic.h"
+#include "../header/piece_fix.h"
 
 /**
  * @brief Фиксирует фигуру на игровом поле.

@@ -6,10 +6,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "../../brick_game/tetris/game_logic.h"
+#include "../../../brick_game/tetris/header/game_logic.h"
 #include "main.h"
-#define ROWS 20
-#define COLS 10
 
 // Функции отображения
 void renderStartScreen();

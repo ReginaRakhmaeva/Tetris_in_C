@@ -525,52 +525,59 @@ START_TEST(test_updateScoreAndLevel) {
       .speed = 1,
   };
 
-  updateScoreAndLevel(&game, 1);
+  updateScore(&game, 1);
+  updateLevelAndSpeed(&game);
   ck_assert_int_eq(game.score, 100);
   ck_assert_int_eq(game.high_score, 500);
   ck_assert_int_eq(game.level, 1);
-  ck_assert_int_eq(game.speed, 1);
+  ck_assert_int_eq(game.speed, 2);
 
-  updateScoreAndLevel(&game, 2);
+  updateScore(&game, 2);
+  updateLevelAndSpeed(&game);
   ck_assert_int_eq(game.score, 400);
   ck_assert_int_eq(game.high_score, 500);
   ck_assert_int_eq(game.level, 1);
-  ck_assert_int_eq(game.speed, 1);
+  ck_assert_int_eq(game.speed, 2);
 
-  updateScoreAndLevel(&game, 3);
+  updateScore(&game, 3);
+  updateLevelAndSpeed(&game);
   ck_assert_int_eq(game.score, 1100);
   ck_assert_int_eq(game.high_score, 1100);
   ck_assert_int_eq(game.level, 2);
-  ck_assert_int_eq(game.speed, 2);
+  ck_assert_int_eq(game.speed, 3);
 
-  updateScoreAndLevel(&game, 4);
+  updateScore(&game, 4);
+  updateLevelAndSpeed(&game);
   ck_assert_int_eq(game.score, 2600);
   ck_assert_int_eq(game.high_score, 2600);
   ck_assert_int_eq(game.level, 5);
-  ck_assert_int_eq(game.speed, 5);
+  ck_assert_int_eq(game.speed, 6);
 
   game.level = 10;
   game.score = 6000;
-  updateScoreAndLevel(&game, 3);
+  updateScore(&game, 3);
+  updateLevelAndSpeed(&game);
   ck_assert_int_eq(game.score, 6700);
   ck_assert_int_eq(game.high_score, 6700);
   ck_assert_int_eq(game.level, 10);
-  ck_assert_int_eq(game.speed, 10);
+  ck_assert_int_eq(game.speed, 11);
 
   game.score = 7000;
-  updateScoreAndLevel(&game, 3);
+  updateScore(&game, 3);
+  updateLevelAndSpeed(&game);
   ck_assert_int_eq(game.score, 7700);
   ck_assert_int_eq(game.high_score, 7700);
   ck_assert_int_eq(game.level, 10);
-  ck_assert_int_eq(game.speed, 10);
+  ck_assert_int_eq(game.speed, 11);
 
   game.score = 400;
   game.high_score = 500;
-  updateScoreAndLevel(&game, 0);
+  updateScore(&game, 0);
+  updateLevelAndSpeed(&game);
   ck_assert_int_eq(game.score, 400);
   ck_assert_int_eq(game.high_score, 500);
   ck_assert_int_eq(game.level, 10);
-  ck_assert_int_eq(game.speed, 10);
+  ck_assert_int_eq(game.speed, 11);
 }
 END_TEST
 

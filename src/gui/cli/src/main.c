@@ -1,6 +1,7 @@
-#include "main.h"
+#include "../header/main.h"
 
-#include "../../brick_game/tetris/game_logic.h"
+#include "../../../brick_game/tetris/header/defines.h"
+#include "../../../brick_game/tetris/header/game_logic.h"
 
 /**
  * @brief Основная функция программы.

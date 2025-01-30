@@ -1,17 +1,7 @@
 #ifndef PIECE_MOVE_H
 #define PIECE_MOVE_H
 
-#include <ncurses.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
 #include "game_logic.h"
-
-#define ROWS 20
-#define COLS 10
 
 bool canMoveDown(Piece *piece, int **field);
 bool canMoveLeft(Piece *piece, int **field);
