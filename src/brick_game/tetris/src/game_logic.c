@@ -46,7 +46,7 @@ void initializeGame(GameInfo_t *game) {
   game->level = 1;
   game->score = 0;
   game->high_score = loadHighScore();
-  game->speed = 20 + game->level * 0.5;
+  game->speed = 20 + (game->level - 1) * 0.1;
   game->pause = 0;
 
   game->field = (int **)malloc(sizeof(int *) * ROWS);

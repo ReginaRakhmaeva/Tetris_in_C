@@ -1,6 +1,6 @@
 # Компилятор и флаги
 CC = gcc
-CFLAGS = -Wall -Werror -Wextra -std=c11 -fprofile-arcs -ftest-coverage
+CFLAGS = -Wall -Werror -Wextra -std=c11 -fprofile-arcs -ftest-coverage -g
 LDFLAGS = -lncurses -lcheck -lm -lpthread -lsubunit
 
 # Папки
@@ -35,12 +35,12 @@ all: clean $(EXE)
 
 # Сборка исполняемого файла
 $(EXE): $(OBJ_FILES)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS) 
 
 # Правило для объектных файлов
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)/$(dir $<) 
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ 
 
 # Создание библиотеки
 lib: $(LIB)

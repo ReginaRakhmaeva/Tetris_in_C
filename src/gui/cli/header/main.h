@@ -47,18 +47,4 @@ void cleanupNcursesstart();
  */
 void showGameOverScreen(GameInfo_t *game);
 
-/**
- * @brief Обрабатывает ввод пользователя на стартовом экране.
- *
- * @return true, если пользователь начал игру, иначе false.
- */
-bool handleStartScreenInput();
-
-/**
- * @brief Показывает стартовый экран.
- *
- * @return true, если игра должна запуститься, иначе false.
- */
-bool showStartScreen();
-
 #endif  // MAIN_H

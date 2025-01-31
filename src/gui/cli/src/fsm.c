@@ -7,22 +7,34 @@
  * событий и переходов между различными состояниями игры, такими как движение
  * фигур, пауза и завершение.
  */
-
 #include "../header/fsm.h"
 
 /**
  * @brief Главный игровой цикл.
  *
  * Функция запускает основной игровой цикл, обрабатывая пользовательский ввод и
- * обновляя состояние игры. В зависимости от ввода (например, движение, вращение
- * фигуры, пауза) вызываются соответствующие функции. Цикл продолжается, пока
- * игра не будет завершена или поставлена на паузу.
+ * обновляя состояние игры. В начале игра ожидает нажатия клавиши "Enter" для
+ * старта. В зависимости от ввода (например, движение, вращение фигуры, пауза)
+ * вызываются соответствующие функции.
+ *
+ * Управление:
+ * - Стрелки ← → ↓: движение фигуры.
+ * - Пробел: вращение фигуры.
+ * - P: пауза.
+ * - Q: выход (если игра не началась — завершает работу интерфейса).
+ * - Enter: запуск игры.
+ *
+ * Цикл продолжается, пока игра не будет завершена или поставлена на паузу.
  */
+
+#include <ncurses.h>  // Для работы с ncurses
+#include <stdio.h>    // Добавляем для вывода отладки
+#include <time.h>
+
 void game_loop() {
   GameInfo_t *game = getGameInfo();
-  userInput(Start, false);  // Начинаем игру
   bool break_flag = true;
-
+  int fl_start = false;
   while (break_flag) {
     int signal = processUserInput();
     switch (signal) {
@@ -42,31 +54,48 @@ void game_loop() {
         userInput(Pause, false);
         break;
       case 'q':
-        userInput(Terminate, false);
+        if (fl_start) {
+          userInput(Terminate, false);
+        } else {
+          cleanupNcursesstart();
+        }
         break_flag = false;
+        break;
+      case '\n':
+        if (!fl_start) userInput(Start, false);
+        fl_start = true;
         break;
       default:
         break;
     }
-
-    if (!game->pause && break_flag) {
+    if (!game->pause && break_flag && fl_start) {
       *game = updateCurrentState();
       if (!game->pause) drawField(game);
       game->pause = false;
     }
   }
 }
+
 /**
  * @brief Обрабатывает ввод пользователя и выполняет соответствующие действия.
  *
  * Функция принимает действие пользователя (например, движение или вращение
  * фигуры) и выполняет его, если это возможно. Если игра на паузе, действия,
- * кроме паузы, не выполняются.
+ * кроме паузы и завершения, игнорируются.
+ *
+ * Доступные действия:
+ * - `Left`  — сдвиг фигуры влево.
+ * - `Right` — сдвиг фигуры вправо.
+ * - `Down`  — ускоренное падение фигуры.
+ * - `Action` — вращение фигуры.
+ * - `Pause` — постановка игры на паузу или её снятие.
+ * - `Terminate` — завершение игры и вывод экрана завершения.
+ * - `Start` — начало новой игры, обновление состояния и отрисовка поля.
  *
  * @param action Действие пользователя, представленное значением из перечисления
- * UserAction_t.
- * @param hold Параметр, который не используется в данной функции, но может быть
- * использован в будущем.
+ * `UserAction_t`.
+ * @param hold Зарезервированный параметр (не используется в текущей
+ * реализации).
  */
 
 void userInput(UserAction_t action, bool hold) {
@@ -111,6 +140,11 @@ void userInput(UserAction_t action, bool hold) {
 
     case Terminate:
       showGameOverScreen(game);
+      break;
+
+    case Start:
+      *game = updateCurrentState();
+      drawField(game);
       break;
 
     default:
