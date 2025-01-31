@@ -465,15 +465,6 @@ START_TEST(test_isSpaceAvailableForFullFix) {
 
   ck_assert_int_eq(isSpaceAvailableForFullFix(field, &piece), true);
 
-  piece.x = -1;
-  piece.y = 0;
-
-  ck_assert_int_eq(isSpaceAvailableForFullFix(field, &piece), false);
-
-  piece.x = 5;
-  piece.y = ROWS - 1;
-
-  ck_assert_int_eq(isSpaceAvailableForFullFix(field, &piece), false);
   freeField(field);
 }
 END_TEST

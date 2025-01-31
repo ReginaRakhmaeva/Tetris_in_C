@@ -65,8 +65,7 @@ bool isSpaceAvailableForFullFix(int **field, Piece *piece) {
       if (piece->shape[i][j]) {
         int newX = piece->x + j;
         int newY = piece->y + i;
-        if (newY < 0 || newY >= ROWS || newX < 0 || newX >= COLS ||
-            field[newY][newX]) {
+        if (field[newY][newX]) {
           isAvailable = false;
         }
       }

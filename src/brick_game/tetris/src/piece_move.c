@@ -85,6 +85,38 @@ bool canMoveDown(Piece *piece, int **field) {
 }
 
 /**
+ * @brief Пытается повернуть фигуру на 90 градусов по часовой стрелке.
+ *
+ * Функция проверяет возможность поворота фигуры. Если фигура упирается в стену
+ * или другие блоки, пробуются различные смещения (offset) для успешного
+ * выполнения поворота. Если фигура квадратная, поворот не выполняется.
+ *
+ * @param piece Указатель на структуру `Piece`, представляющую текущую фигуру.
+ * @param field Двумерный массив `int`, представляющий игровое поле.
+ */
+void rotatePiece(Piece *piece, int **field) {
+  if (isSquarePiece(piece)) {
+  } else {
+    int rotated[4][4];
+    rotateMatrix90(piece->shape, rotated);
+
+    const int offsets[5][2] = {{0, 0}, {-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    bool rotationApplied = false;
+
+    for (int k = 0; k < 5 && !rotationApplied; k++) {
+      int offsetX = offsets[k][0];
+      int offsetY = offsets[k][1];
+
+      if (isRotationValid(piece, rotated, offsetX, offsetY, field)) {
+        applyRotation(piece, rotated, offsetX, offsetY);
+        rotationApplied = true;
+      }
+    }
+  }
+}
+
+/**
  * @brief Проверяет, является ли фигура квадратной.
  *
  * @param piece Указатель на структуру Piece, представляющую фигуру.
@@ -137,50 +169,6 @@ bool isRotationValid(Piece *piece, int rotated[4][4], int offsetX, int offsetY,
     }
   }
   return isValid;
-}
-
-/**
- * @brief Вращает фигуру, если это возможно.
- *
- * @param piece Указатель на структуру Piece, представляющую фигуру.
- * @param field Двумерный массив игрового поля.
- */
-void rotatePiece(Piece *piece, int **field) {
-  if (isSquarePiece(piece)) {
-    return;  // Проверка аргументов
-  }
-
-  int rotated[4][4];
-  rotateMatrix90(piece->shape, rotated);
-
-  const int offsets[5][2] = {
-      {0, 0},   // No offset
-      {-1, 0},  // Left
-      {1, 0},   // Right
-      {0, -1},  // Up
-      {0, 1}    // Down
-  };
-
-  bool rotationApplied = false;
-
-  for (int k = 0; k < 5 && !rotationApplied; k++) {
-    int offsetX = offsets[k][0];
-    int offsetY = offsets[k][1];
-
-    if (isRotationValid(piece, rotated, offsetX, offsetY, field)) {
-      applyRotation(piece, rotated, offsetX, offsetY);
-      rotationApplied = true;
-    }
-  }
-
-  if (!rotationApplied) {
-    if (piece->x + 3 >= COLS && canMoveLeft(piece, field)) {
-      piece->x -= 1;
-    } else if (piece->x < 0 && canMoveRight(piece, field)) {
-      piece->x += 1;
-    }
-    rotatePiece(piece, field);  // Рекурсия для повторной попытки
-  }
 }
 
 /**
